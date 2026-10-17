@@ -1,0 +1,46 @@
+:root {
+  --bg-0: #06080D;
+  --bg-1: #0B0F17;
+  --bg-2: #111723;
+  --bg-glass: rgba(17, 23, 35, .62);
+  --line: rgba(255, 255, 255, .07);
+  --line-strong: rgba(255, 255, 255, .14);
+
+  --text-0: #EEF2F8;
+  --text-1: #A7B0C0;
+  --text-2: #6B7486;
+  --accent: #C8FF4D;
+  --accent-ink: #0B0F17;
+  --accent-glow: rgba(200, 255, 77, .35);
+
+  --sev-critical: #FF3B5C;
+  --sev-high: #FF8A3D;
+  --sev-medium: #FFC94D;
+  --sev-low: #5CC8FF;
+  --sev-unknown: #8A93A6;
+
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 8px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --dur-1: 140ms;
+  --dur-2: 260ms;
+  --dur-3: 520ms;
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 12px 40px -12px rgba(0, 0, 0, .6);
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-15: 15px;
+  --fs-18: 18px;
+  --fs-24: 24px;
+  --fs-36: 36px;
+  --fs-64: 64px;
+
+  --rail: 64px;
+  --topbar: 56px;
+  --drawer: 520px;
+}
