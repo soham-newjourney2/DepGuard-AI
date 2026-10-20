@@ -11,3 +11,4 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+!backend/tests/fixtures/reach_app/node_modules/
