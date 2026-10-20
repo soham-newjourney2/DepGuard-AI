@@ -1,0 +1,38 @@
+{
+  "name": "dev-app",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "dev-app",
+      "dependencies": {
+        "a": "^1.0.0"
+      },
+      "devDependencies": {
+        "lint": "^1.0.0"
+      }
+    },
+    "node_modules/a": {
+      "version": "1.0.0"
+    },
+    "node_modules/lint": {
+      "version": "1.0.0",
+      "dev": true,
+      "dependencies": {
+        "x": "^1.0.0"
+      }
+    },
+    "node_modules/x": {
+      "version": "1.0.0",
+      "dependencies": {
+        "y": "^1.0.0"
+      }
+    },
+    "node_modules/y": {
+      "version": "1.0.0",
+      "dev": true
+    }
+  }
+}

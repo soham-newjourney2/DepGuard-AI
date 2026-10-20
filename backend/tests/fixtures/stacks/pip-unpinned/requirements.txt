@@ -1,0 +1,4 @@
+fastapi
+uvicorn>=0.20
+requests==2.25.0
+-e git+https://github.com/x/y.git#egg=y

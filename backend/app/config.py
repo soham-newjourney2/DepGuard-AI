@@ -25,9 +25,25 @@ class Settings(BaseSettings):
     rate_limit: str = "30/min"
     data_dir: Path = ROOT / "data"
     frontend_dir: Path = ROOT / "frontend"
+    samples_dir: Path = ROOT / "samples"
+    cleanup_interval_s: float = 60
+    osv_api_url: str = "https://api.osv.dev"
+    registry_url: str = "https://registry.npmjs.org"
+    github_codeload_url: str = "https://codeload.github.com"
+    local_only: bool = False
+    cache_ttl_h: float = 24
+    recorded_dir: Path = ROOT / "samples" / "_recorded" / "osv"
+    web_timeout_s: float = 10
+    web_max_page_kb: int = 2048
+    web_max_asset_kb: int = 3072
+    web_max_assets: int = 25
+    web_max_total_mb: int = 15
+    web_allow_private: bool = False
 
     @property
     def ai_effective(self) -> str:
+        if self.local_only:
+            return "off"
         if self.ai_provider == "auto":
             return "anthropic" if self.anthropic_api_key else "template"
         return self.ai_provider

@@ -10,7 +10,8 @@ def test_health_reports_config(client):
     r = client.get("/api/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok", "version": __version__, "scanner": "fixture",
-                        "ai": "template", "verify_mode": "mock"}
+                        "ai": "template", "verify_mode": "mock", "max_upload_mb": 15,
+                        "local_only": False}
 
 
 def test_ai_auto_uses_anthropic_when_key_set(settings):

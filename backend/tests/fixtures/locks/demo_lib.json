@@ -1,0 +1,28 @@
+{
+  "name": "norm-app",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "norm-app",
+      "dependencies": {
+        "demo-lib": "^1.0.0",
+        "wrapper": "^1.0.0"
+      }
+    },
+    "node_modules/demo-lib": {
+      "version": "1.0.0"
+    },
+    "node_modules/wrapper": {
+      "version": "1.0.0",
+      "dependencies": {
+        "demo-lib": "^2.0.0"
+      }
+    },
+    "node_modules/wrapper/node_modules/demo-lib": {
+      "version": "2.0.1"
+    }
+  }
+}

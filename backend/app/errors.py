@@ -9,13 +9,21 @@ log = logging.getLogger("depguard")
 
 
 class AppError(Exception):
-    def __init__(self, code: str, message: str, hint: str = "", status: int = 400):
+    def __init__(self, code: str, message: str, hint: str = "", status: int = 400,
+                 headers: dict[str, str] | None = None, options: list[str] | None = None):
         super().__init__(message)
         self.code, self.message, self.hint, self.status = code, message, hint, status
+        self.headers = headers
+        self.options = options
 
 
-def envelope(code: str, message: str, hint: str, status: int) -> JSONResponse:
-    return JSONResponse({"error": {"code": code, "message": message, "hint": hint}}, status)
+def envelope(code: str, message: str, hint: str, status: int,
+             headers: dict[str, str] | None = None,
+             options: list[str] | None = None) -> JSONResponse:
+    error = {"code": code, "message": message, "hint": hint}
+    if options:
+        error["options"] = options
+    return JSONResponse({"error": error}, status, headers=headers)
 
 
 HTTP_CODES = {404: "E_NOT_FOUND", 405: "E_METHOD", 413: "E_TOO_LARGE", 429: "E_RATE_LIMIT"}
@@ -24,7 +32,8 @@ HTTP_CODES = {404: "E_NOT_FOUND", 405: "E_METHOD", 413: "E_TOO_LARGE", 429: "E_R
 def install(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def _app(_: Request, exc: AppError):
-        return envelope(exc.code, exc.message, exc.hint, exc.status)
+        return envelope(exc.code, exc.message, exc.hint, exc.status, exc.headers,
+                        exc.options)
 
     @app.exception_handler(HTTPException)
     async def _http(_: Request, exc: HTTPException):

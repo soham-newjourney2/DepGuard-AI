@@ -1,4 +1,4 @@
-"""§5.1: the API process never spawns npm/node — only code under app/verify/ may."""
+"""The API process never spawns npm/node — only code under app/verify/ may."""
 
 import re
 from pathlib import Path

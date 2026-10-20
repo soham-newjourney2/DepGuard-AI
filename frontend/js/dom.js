@@ -46,3 +46,8 @@ export function icon(paths, size = 20) {
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 export const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+export function fill(el, ...children) {
+  el.replaceChildren(...children.flat(Infinity).filter((c) => c != null && c !== false));
+  return el;
+}

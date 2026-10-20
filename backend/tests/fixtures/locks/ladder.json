@@ -1,0 +1,87 @@
+{
+  "name": "ladder",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "ladder",
+      "dependencies": {
+        "a1": "1",
+        "b1": "1"
+      }
+    },
+    "node_modules/a1": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a2": "1",
+        "b2": "1"
+      }
+    },
+    "node_modules/b1": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a2": "1",
+        "b2": "1"
+      }
+    },
+    "node_modules/a2": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a3": "1",
+        "b3": "1"
+      }
+    },
+    "node_modules/b2": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a3": "1",
+        "b3": "1"
+      }
+    },
+    "node_modules/a3": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a4": "1",
+        "b4": "1"
+      }
+    },
+    "node_modules/b3": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a4": "1",
+        "b4": "1"
+      }
+    },
+    "node_modules/a4": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a5": "1",
+        "b5": "1"
+      }
+    },
+    "node_modules/b4": {
+      "version": "1.0.0",
+      "dependencies": {
+        "a5": "1",
+        "b5": "1"
+      }
+    },
+    "node_modules/a5": {
+      "version": "1.0.0",
+      "dependencies": {
+        "z": "1"
+      }
+    },
+    "node_modules/b5": {
+      "version": "1.0.0",
+      "dependencies": {
+        "z": "1"
+      }
+    },
+    "node_modules/z": {
+      "version": "9.9.9"
+    }
+  }
+}

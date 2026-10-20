@@ -1,0 +1,30 @@
+[[package]]
+name = "asgiref"
+version = "3.6.0"
+optional = false
+
+[[package]]
+name = "django"
+version = "3.2.4"
+optional = false
+
+[package.dependencies]
+asgiref = ">=3.3.2,<4"
+pytz = "*"
+sqlparse = {version = ">=0.2.2"}
+
+[[package]]
+name = "pytz"
+version = "2023.3"
+optional = false
+
+[[package]]
+name = "sqlparse"
+version = "0.4.3"
+optional = false
+
+[[package]]
+name = "pytest"
+version = "7.4.0"
+category = "dev"
+optional = false

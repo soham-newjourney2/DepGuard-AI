@@ -1,0 +1,17 @@
+{
+  "name": "vuln-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tiny Express API pinned to old dependencies for the DepGuard AI demo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "4.17.1",
+    "request": "2.88.2"
+  },
+  "devDependencies": {
+    "mkdirp": "0.5.1"
+  }
+}

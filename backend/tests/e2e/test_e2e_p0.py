@@ -56,12 +56,12 @@ def test_p0_dom_h_never_parses_html(page, base_url):
     assert kids == 0 and "&lt;img" in html and threw
 
 
-def test_p0_drop_zone_types_filename_and_toasts(page, base_url):
+def test_p0_drop_zone_rejects_non_zip_client_side(page, base_url):
     page.goto(base_url + "/")
     page.locator(".drop input[type=file]").set_input_files(
-        {"name": "my-app.zip", "mimeType": "application/zip", "buffer": b"PK\x05\x06" + b"\0" * 18})
-    expect(page.locator(".drop__file")).to_have_text("my-app.zip")
-    expect(page.locator(".toast")).to_be_visible()
+        {"name": "notes.txt", "mimeType": "text/plain", "buffer": b"hello"})
+    expect(page.locator(".toast")).to_contain_text("notes.txt is not a .zip file.")
+    assert "#/jobs/" not in page.url
 
 
 def test_p0_unknown_route_shows_not_found(page, base_url):

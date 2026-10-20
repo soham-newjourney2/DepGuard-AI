@@ -1,0 +1,22 @@
+{
+  "name": "missing-app",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "missing-app",
+      "dependencies": {
+        "a": "^1.0.0",
+        "ghost": "^1.0.0"
+      }
+    },
+    "node_modules/a": {
+      "version": "1.0.0",
+      "dependencies": {
+        "phantom": "^2.0.0"
+      }
+    }
+  }
+}

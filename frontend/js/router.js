@@ -17,12 +17,19 @@ export function match(path) {
 
 export function start(outlet, fallback) {
   const render = () => {
-    const path = location.hash.replace(/^#/, '') || '/';
+    const [raw, search = ''] = location.hash.replace(/^#/, '').split('?');
+    const path = raw || '/';
     const found = match(path) ?? { view: fallback, params: {} };
-    current?.destroy?.();
-    current = found.view(found.params);
-    outlet.replaceChildren(current.el);
-    window.scrollTo(0, 0);
+    const query = Object.fromEntries(new URLSearchParams(search));
+    const swap = () => {
+      current?.destroy?.();
+      current = found.view({ ...found.params, query });
+      outlet.replaceChildren(current.el);
+      window.scrollTo(0, 0);
+    };
+    const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (document.startViewTransition && motion && current) document.startViewTransition(swap);
+    else swap();
     document.dispatchEvent(new CustomEvent('route', { detail: { path } }));
   };
   window.addEventListener('hashchange', render);

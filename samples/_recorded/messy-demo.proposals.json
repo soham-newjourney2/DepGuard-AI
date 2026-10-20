@@ -1,0 +1,875 @@
+[
+ {
+  "finding": "ejs@3.1.5 GHSA-phwq-j96m-2c2q",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "ejs 3.1.5->3.1.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-2w6w-674q-4c4q",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-765h-qjxv-5f44",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-8r5x-fm3f-whwj",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-f2jv-r9rf-7988",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "underscore@1.12.0 GHSA-cf4h-3jhx-xvhq",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "underscore 1.12.0->1.13.8"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-p8wg-vrv2-v86f",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "minimist@0.0.10 GHSA-xvch-5gv4-984h",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.4"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "minimist 0.0.10->0.2.4"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "semver@5.7.1 GHSA-c2qf-rxjj-qqgw",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "semver 5.7.1->5.7.2"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "semver 5.7.1->5.7.2"
+    ]
+   },
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "jsonwebtoken 8.5.1->9.0.0",
+     "semver 5.7.1->5.7.2",
+     "nodemon 1.19.4->2.0.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "node-serialize@0.0.4 GHSA-q4v7-4rhw-9hqm",
+  "proposals": [
+   {
+    "strategy": "none",
+    "changes": []
+   }
+  ]
+ },
+ {
+  "finding": "node-fetch@2.6.0 GHSA-r683-j2x4-v87g",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "node-fetch 2.6.0->2.6.7"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-pjwm-pj3p-43mv",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-p92q-9vqr-4j8v",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-xjpj-3mr7-gcpf",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-3mfm-83xf-c92r",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-xhpv-hc6g-r9c6",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "jsonwebtoken@8.5.1 GHSA-8cf7-32gw-wr33",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "jsonwebtoken 8.5.1->9.0.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "lodash@4.17.15 GHSA-r5fr-rjxr-66jc",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "lodash 4.17.15->4.18.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "serialize-javascript@2.1.0 GHSA-5c6j-r48x-rmvq",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "serialize-javascript 2.1.0->7.0.3"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "serialize-javascript@2.1.0 GHSA-hxcc-f52p-wc94",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "serialize-javascript 2.1.0->7.0.3"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-jr5f-v2jv-69x6",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-43fc-jf86-j433",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-62hf-57xw-28j9",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-cph5-m8f7-6c5x",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.21.2"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-hfxv-24rg-xrqf",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-j5f8-grm9-p9fc",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-9cx6-37pm-9jff",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "marked@0.3.6 GHSA-5v2h-r2cx-5xgj",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "marked 0.3.6->4.0.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "marked@0.3.6 GHSA-rrrm-qjm4-v8hf",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "marked 0.3.6->4.0.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "marked@0.3.6 GHSA-x5pg-88wf-qq4p",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "marked 0.3.6->0.3.9"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "moment@2.29.1 GHSA-8hfj-j24r-96c4",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "moment 2.29.1->2.29.4"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "moment@2.29.1 GHSA-wc69-rhjr-hc9g",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "moment 2.29.1->2.29.4"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-6chq-wfr3-2hj9",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-pf86-5x62-jrwf",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "lodash@4.17.15 GHSA-p6mc-m468-83gw",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "lodash 4.17.15->4.18.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-pmwg-cvhr-8vh7",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "lodash@4.17.15 GHSA-35jh-r3h4-6jhm",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "lodash 4.17.15->4.18.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-3g43-6gmg-66jw",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "marked@0.3.6 GHSA-p9wx-2529-fp83",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "marked 0.3.6->0.3.17"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-m7pr-hjqh-92cm",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-wf5p-g6vw-rhxx",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "lodash@4.17.15 GHSA-f23m-r3pf-42rh",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "lodash 4.17.15->4.18.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "lodash@4.17.15 GHSA-xxjr-mmjv-4gpg",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "lodash 4.17.15->4.18.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "jsonwebtoken@8.5.1 GHSA-qwph-4952-7xr6",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "jsonwebtoken 8.5.1->9.0.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-7q8q-rj6j-mhjq",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-mmx7-hfxf-jppx",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "marked@0.3.6 GHSA-7px7-7xjx-hxm8",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "marked 0.3.6->0.3.7"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-4w2v-q235-vp99",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.21.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "underscore@1.12.0 GHSA-qpx9-hpmf-5gmw",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "underscore 1.12.0->1.13.8"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-xx6v-rp6x-q39c",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-5c9x-8gcm-mpgx",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-vf2m-468p-8v99",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "lodash@4.17.15 GHSA-29mw-wpgm-hmr9",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "lodash 4.17.15->4.18.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "xml2js@0.4.23 GHSA-776f-qx25-q3cc",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "xml2js 0.4.23->0.5.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "jsonwebtoken@8.5.1 GHSA-hjrf-2m68-5959",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "jsonwebtoken 8.5.1->9.0.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-3p68-rc4w-qgx5",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-898c-q2cr-xwhg",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-fvcv-3m26-pcqx",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-w9j2-pvgh-6h63",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-2qvq-rjwj-gvw9",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-xw65-4hp5-5hc7",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "serialize-javascript@2.1.0 GHSA-h9rv-jmmf-4pgx",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "serialize-javascript 2.1.0->2.1.1"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "ejs@3.1.5 GHSA-ghr5-ch3p-vcr6",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "ejs 3.1.5->3.1.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "minimist@0.0.10 GHSA-vh95-rmgr-6w4m",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.4"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "minimist 0.0.10->0.2.4"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "axios@0.21.0 GHSA-xhjh-pmcv-23jw",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "axios 0.21.0->0.33.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "handlebars@4.5.3 GHSA-442j-39wm-28r2",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "handlebars 4.5.3->4.7.10"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "node-fetch@2.6.0 GHSA-w7rc-rwvf-8q5r",
+  "proposals": [
+   {
+    "strategy": "direct-bump",
+    "changes": [
+     "node-fetch 2.6.0->2.6.7"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "braces@2.3.2 GHSA-grv7-fg5c-xmjg",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "nodemon 1.19.4->2.0.0",
+     "chokidar 2.1.8->3.6.0",
+     "braces 2.3.2->3.0.3",
+     "anymatch 2.0.0->3.1.3",
+     "readdirp 2.2.1->3.6.0"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "braces 2.3.2->3.0.3"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "cross-spawn@5.1.0 GHSA-3xgq-45jj-v275",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "nodemon 1.19.4->2.0.3",
+     "update-notifier 2.5.0->4.1.3",
+     "boxen 1.3.0->4.2.0",
+     "term-size 1.2.0->2.2.1"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "cross-spawn 5.1.0->6.0.6"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "braces@2.3.2 GHSA-vfj7-8cjw-p6xm",
+  "proposals": [
+   {
+    "strategy": "none",
+    "changes": []
+   }
+  ]
+ },
+ {
+  "finding": "decode-uri-component@0.2.2 GHSA-vcc3-ghjq-m6fr",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "nodemon 1.19.4->2.0.0",
+     "chokidar 2.1.8->3.6.0",
+     "braces 2.3.2->3.0.3",
+     "anymatch 2.0.0->3.1.3",
+     "readdirp 2.2.1->3.6.0"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "decode-uri-component 0.2.2->0.5.0"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "got@6.7.1 GHSA-pfrx-2q88-qq97",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "nodemon 1.19.4->2.0.17",
+     "update-notifier 2.5.0->6.0.2",
+     "latest-version 3.1.0->7.0.0",
+     "package-json 4.0.1->8.1.1",
+     "got 6.7.1->12.6.1"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "got 6.7.1->11.8.5"
+    ]
+   }
+  ]
+ },
+ {
+  "finding": "micromatch@3.1.10 GHSA-952p-6rrq-rcjv",
+  "proposals": [
+   {
+    "strategy": "parent-bump",
+    "changes": [
+     "nodemon 1.19.4->2.0.0",
+     "chokidar 2.1.8->3.6.0",
+     "anymatch 2.0.0->3.1.3",
+     "readdirp 2.2.1->3.6.0"
+    ]
+   },
+   {
+    "strategy": "override",
+    "changes": [
+     "micromatch 3.1.10->4.0.8"
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DepGuard AI Walkthrough</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/* Layout: one reading column (~70ch) with wide breakouts for the pipeline rail, tables and diagrams; DepGuard's own dark-first tokens. */
+:root {
+  --bg: #06080D; --surface: #0B0F17; --surface-2: #111723;
+  --line: rgba(255,255,255,.08); --line-strong: rgba(255,255,255,.16);
+  --fg: #EEF2F8; --fg-1: #A7B0C0; --fg-2: #737C8F;
+  --accent: #C8FF4D; --accent-ink: #0B0F17; --accent-soft: rgba(200,255,77,.12);
+  --crit: #FF3B5C; --high: #FF8A3D; --med: #FFC94D; --low: #5CC8FF; --ok: #7DDB8B;
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #F5F6F8; --surface: #FFFFFF; --surface-2: #ECEFF3;
+    --line: rgba(12,18,30,.10); --line-strong: rgba(12,18,30,.20);
+    --fg: #0B0F17; --fg-1: #485164; --fg-2: #5E6778;
+    --accent: #3F6B00; --accent-ink: #FFFFFF; --accent-soft: rgba(63,107,0,.10);
+    --crit: #C8102E; --high: #B44A00; --med: #8A5A00; --low: #0B6A9E; --ok: #1E7B34;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #F5F6F8; --surface: #FFFFFF; --surface-2: #ECEFF3;
+  --line: rgba(12,18,30,.10); --line-strong: rgba(12,18,30,.20);
+  --fg: #0B0F17; --fg-1: #485164; --fg-2: #5E6778;
+  --accent: #3F6B00; --accent-ink: #FFFFFF; --accent-soft: rgba(63,107,0,.10);
+  --crit: #C8102E; --high: #B44A00; --med: #8A5A00; --low: #0B6A9E; --ok: #1E7B34;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.65 var(--font-ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 72px;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code, .mono { font-family: var(--font-mono); font-size: .88em; }
+:not(pre) > code { background: var(--surface-2); border: 1px solid var(--line); border-radius: 5px; padding: .05em .35em; overflow-wrap: anywhere; }
+
+.page { max-width: 1060px; margin: 0 auto; display: grid; gap: 72px; }
+.col { max-width: 70ch; }
+section { display: grid; gap: 18px; min-width: 0; }
+
+.eyebrow { font: 500 12px/1.2 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--fg-2); }
+h1, h2 { font-family: var(--font-display); font-weight: 400; text-wrap: balance; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(44px, 8vw, 84px); line-height: .98; }
+h1 em { color: var(--accent); }
+h2 { font-size: clamp(32px, 5vw, 46px); line-height: 1.05; }
+h3 { font: 600 18px/1.3 var(--font-ui); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.lede { font-size: 19px; color: var(--fg-1); max-width: 62ch; }
+.muted { color: var(--fg-1); }
+.small { font-size: 14px; color: var(--fg-2); }
+
+/* hero */
+.hero { padding-block: 64px 8px; display: grid; gap: 22px; border-bottom: 1px solid var(--line); padding-bottom: 48px; }
+.facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.fact { font: 500 13px/1 var(--font-mono); padding: 8px 12px; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--fg-1); font-variant-numeric: tabular-nums; }
+.fact b { color: var(--fg); font-weight: 500; }
+
+/* inputs strip */
+.inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.input { background: var(--surface); padding: 18px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.input .k { font: 500 12px/1 var(--font-mono); color: var(--accent); letter-spacing: .06em; text-transform: uppercase; }
+
+/* pipeline rail */
+.rail { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+.step { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 0 20px; position: relative; padding-bottom: 34px; }
+.step::before { content: ""; position: absolute; left: 31px; top: 46px; bottom: 0; width: 2px; background: linear-gradient(var(--line-strong), var(--line)); }
+.step:last-child::before { display: none; }
+.num { width: 64px; height: 46px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 10px; font: 500 15px/1 var(--font-mono); color: var(--fg-1); background: var(--surface); font-variant-numeric: tabular-nums; }
+.step.key .num { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.body { display: grid; gap: 10px; min-width: 0; padding-top: 8px; }
+.body .where { font: 13px/1.4 var(--font-mono); color: var(--fg-2); overflow-wrap: anywhere; }
+.body ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--fg-1); }
+.body ul li::marker { color: var(--fg-2); }
+
+/* example trace */
+.trace { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 16px; min-width: 0; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font: 14px/1 var(--font-mono); }
+.chain span { padding: 8px 11px; border: 1px solid var(--line-strong); border-radius: 8px; white-space: nowrap; }
+.chain .arrow { border: 0; padding: 0; color: var(--fg-2); }
+.chain .hit { border-color: var(--high); color: var(--high); }
+.ev { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ev li { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; font-size: 15px; color: var(--fg-1); }
+.ev .id { font: 500 13px/1.6 var(--font-mono); color: var(--accent); }
+
+/* tables */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 640px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 12px/1.3 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--fg-2); background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+td:first-child { color: var(--fg); font-weight: 500; white-space: nowrap; }
+td { color: var(--fg-1); }
+.num-cell { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+/* score bars */
+.score { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 54px; gap: 12px; align-items: center; font-size: 14px; }
+.bar .track { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); }
+.bar .fill { height: 100%; background: var(--accent); border-radius: 999px; }
+.bar .pts { font: 500 13px/1 var(--font-mono); color: var(--fg-1); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* sandbox flags */
+pre.term { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; font: 13px/1.6 var(--font-mono); color: var(--fg-1); overflow-x: auto; white-space: pre; }
+pre.term .c { color: var(--fg-2); }
+pre.term .a { color: var(--accent); }
+
+/* phases timeline */
+.phases { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.phase { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--surface); display: grid; gap: 4px; align-content: start; }
+.phase .p { font: 500 12px/1 var(--font-mono); color: var(--accent); }
+.phase .t { font-weight: 600; font-size: 15px; }
+.phase .d { font-size: 13.5px; color: var(--fg-1); }
+
+/* recommendation */
+.rec { border: 1px solid var(--accent); border-radius: 16px; padding: clamp(18px, 4vw, 32px); background: linear-gradient(180deg, var(--accent-soft), transparent 220px), var(--surface); display: grid; gap: 22px; }
+.rec h2 em { color: var(--accent); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.box { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; background: var(--bg); min-width: 0; }
+.box ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--fg-1); font-size: 15px; }
+.tag { display: inline-block; font: 500 11px/1 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--fg-1); white-space: nowrap; }
+.tag.s { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.tag.m { color: var(--med); border-color: color-mix(in srgb, var(--med) 50%, transparent); }
+.tag.l { color: var(--high); border-color: color-mix(in srgb, var(--high) 50%, transparent); }
+.backlog { display: grid; gap: 10px; counter-reset: b; }
+.bitem { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.bitem .rank { font: 500 20px/1 var(--font-display); color: var(--accent); }
+.bitem .why { font-size: 14.5px; color: var(--fg-1); margin-top: 4px; }
+.bitem .tags { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+pre.mermaid { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; overflow-x: auto; margin: 0; }
+
+footer { border-top: 1px solid var(--line); padding-top: 24px; color: var(--fg-2); font-size: 14px; }
+
+@media (max-width: 560px) {
+  .step { grid-template-columns: 46px minmax(0, 1fr); gap: 0 14px; }
+  .num { width: 46px; height: 40px; font-size: 13px; }
+  .step::before { left: 22px; top: 40px; }
+  .bar { grid-template-columns: 110px minmax(0, 1fr) 44px; }
+  .bitem { grid-template-columns: 26px minmax(0, 1fr); }
+  .bitem .tags { grid-column: 2; justify-content: flex-start; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bar .fill { animation: grow .9s cubic-bezier(.2,.8,.2,1) both; transform-origin: left; }
+  @keyframes grow { from { transform: scaleX(.2); } to { transform: scaleX(1); } }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<header class="hero">
+  <span class="eyebrow">DepGuard AI · project walkthrough · 20 Oct 2026</span>
+  <h1>From a lockfile to a <em>proven</em> fix.</h1>
+  <p class="lede">DepGuard AI takes a project (a zip, a GitHub link or a live website), finds every dependency with a known advisory, shows the exact path from your code to it, ranks it with cited evidence, proposes the smallest defensible fix and, for npm, proves that fix in a locked-down container. This page walks through every step, the security model, the code map, and what to build next.</p>
+  <div class="facts" aria-label="Project facts">
+    <span class="fact"><b>16</b> phases (P0–P15)</span>
+    <span class="fact"><b>553</b> unit/API tests</span>
+    <span class="fact"><b>66</b> browser e2e tests</span>
+    <span class="fact"><b>9</b> stacks incl. live sites</span>
+    <span class="fact"><b>41 s</b> offline demo run</span>
+  </div>
+</header>
+
+<section>
+  <span class="eyebrow">What goes in</span>
+  <h2>Four ways to start a scan</h2>
+  <div class="inputs">
+    <div class="input"><span class="k">Zip upload</span><p class="muted">A project folder with its lockfile. Checked for size, file count, compression ratio and hostile paths before anything is extracted.</p></div>
+    <div class="input"><span class="k">GitHub link</span><p class="muted"><code>github.com/o/r</code>, <code>/tree/&lt;branch&gt;/&lt;folder&gt;</code>, <code>/blob/…</code>, <code>.git</code>, <code>git@…</code> or <code>owner/repo@ref</code>. Downloaded from codeload only.</p></div>
+    <div class="input"><span class="k">Website URL</span><p class="muted">One public page is read as text. Libraries are recognised from <code>&lt;script&gt;</code> URLs and license banners. No JavaScript runs.</p></div>
+    <div class="input"><span class="k">Bundled demos</span><p class="muted"><code>vuln-demo</code> (22 findings), <code>messy-demo</code> (73), <code>python-demo</code> (38), <code>site-demo</code> (65). All work offline from recorded OSV data.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">The whole flow</span>
+  <h2>Pipeline at a glance</h2>
+  <pre class="mermaid">
+flowchart LR
+  A[Zip / GitHub link] --> B[Safe extract + project discovery]
+  W[Website URL] --> F[SSRF-safe fetch + library detection]
+  B --> C[Lockfile parser for the stack]
+  C --> G[Dependency graph: paths, depth, scope]
+  F --> G
+  G --> S[OSV scan]
+  S --> N[Normalise advisories]
+  N --> R[Reachability]
+  R --> P[Priority + evidence E1-E6]
+  P --> X[Grounded explanation]
+  P --> Y[Fix planner]
+  Y --> V{npm?}
+  V -- yes --> Z[Sandbox verify: resolve, test, rescan]
+  V -- no --> M[Command + diff, marked not verified]
+  Z --> T[Before/after report + SBOM]
+  M --> T
+  </pre>
+  <p class="small">Every arrow above is a real module in <code>backend/app/</code>. The API process never runs npm, node or anything from an upload. Only the disposable worker container does.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Step by step</span>
+  <h2>What happens to your project, in order</h2>
+  <ol class="rail">
+    <li class="step key">
+      <span class="num">01</span>
+      <div class="body">
+        <h3>Intake: make the archive safe to look at</h3>
+        <span class="where">intake.py · routes/jobs.py · github.py · stacks/__init__.py</span>
+        <ul>
+          <li>Limits: <code>MAX_UPLOAD_MB</code> 15, 5,000 files, 80 MB unzipped, compression ratio ≤ 100 (zip-bomb defence). Declared sizes are re-checked while streaming.</li>
+          <li>Rejects absolute paths, <code>..</code>, drive letters, alternate data streams, reserved device names and symlinks. Skips <code>node_modules</code>, <code>.git</code> and nested archives.</li>
+          <li>Project discovery walks up to four folders deep, skipping <code>vendor</code>, virtualenvs and build output. One lockfile-backed project is chosen automatically. Several projects (for example <code>web</code> and <code>api#Python</code>) produce a picker.</li>
+          <li>A manifest without a lockfile gets a precise hint, such as <code>poetry lock</code>, <code>pip freeze &gt; requirements.txt</code> or <code>cargo generate-lockfile</code>.</li>
+          <li>GitHub links: <code>/tree/feature/x/server</code> is ambiguous, so DepGuard tries ref <code>feature</code>, then <code>feature/x</code> (at most four splits) against codeload. The rest of the path becomes the project folder.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">02</span>
+      <div class="body">
+        <h3>Parse: one dependency graph for every stack</h3>
+        <span class="where">lockfile.py · graph.py · stacks/{python,go,rust,php,ruby,dotnet,java}.py</span>
+        <ul>
+          <li><b>npm</b>: <code>package-lock.json</code> v2/v3 resolved the way Node resolves nested <code>node_modules</code>, including links, aliases and peer/optional flags.</li>
+          <li><b>Python</b>: <code>uv.lock</code>, <code>poetry.lock</code>, <code>Pipfile.lock</code> and pinned <code>requirements*.txt</code>. pip-compile's <code># via</code> comments become real edges.</li>
+          <li><b>Go</b> <code>go.mod</code> (direct vs <code>// indirect</code>, <code>replace</code>), <b>Rust</b> <code>Cargo.lock</code>, <b>PHP</b> <code>composer.lock</code>, <b>Ruby</b> <code>Gemfile.lock</code> with Gemfile groups, <b>.NET</b> <code>packages.lock.json</code>, <b>Java</b> <code>gradle.lockfile</code>.</li>
+          <li>Each package gets a scope (prod/optional/peer/dev), a depth and every path from the root (shortest first, capped at 20). Lockfiles that do not record edges raise <code>W_FLAT_LOCK</code> instead of inventing paths. Unpinned requirements raise <code>W_UNPINNED</code> and are never guessed.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">03</span>
+      <div class="body">
+        <h3>Scan: ask OSV about every installed version</h3>
+        <span class="where">scanner/osv_api.py · osv_cli.py · fixture.py · cache.py · versions.py</span>
+        <ul>
+          <li>Batch query to <a href="https://osv.dev" rel="noopener">OSV</a> with the right ecosystem (<code>npm</code>, <code>PyPI</code>, <code>Go</code>, <code>crates.io</code>, <code>Packagist</code>, <code>RubyGems</code>, <code>NuGet</code>, <code>Maven</code>), then hydrated advisories, cached for 24 h.</li>
+          <li>Version ordering is per ecosystem: PEP 440 for Python, semver for npm/Go/Rust/PHP/.NET, and tokenised ordering for Ruby and Maven (<code>1.2.3.beta &lt; 1.2.3</code>).</li>
+          <li>If OSV is down during a bundled demo, the recorded scan is used and labelled “Cached scan from … — live scanner unavailable.”</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">04</span>
+      <div class="body">
+        <h3>Normalise: one finding per advisory and package</h3>
+        <span class="where">scanner/normalize.py</span>
+        <ul>
+          <li>GHSA ids are preferred and CVE aliases merged. CVSS v3/v4 vectors are scored, and the installed version is matched against affected ranges (SEMVER, ECOSYSTEM and explicit version lists). Fixed versions are taken only from the advisory.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">05</span>
+      <div class="body">
+        <h3>Reachability: is it imported?</h3>
+        <span class="where">reachability.py · web/site.py</span>
+        <ul>
+          <li>Literal imports are indexed per language: JS/TS <code>require</code>/<code>import</code>, Python <code>import</code>/<code>from</code> (with distribution→module aliases such as <code>PyYAML → yaml</code>), Go import paths, Rust <code>use</code>, Ruby <code>require</code>.</li>
+          <li>Labels: <b>Strong evidence</b> (the package itself is imported), <b>Possible</b> (a parent is imported), <b>Not observed</b>, <b>Unknown</b> (dynamic imports, or a language without analysis). Test files are counted separately.</li>
+          <li>For websites the evidence is the exact <code>&lt;script&gt;</code> line that loads the library.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step key">
+      <span class="num">06</span>
+      <div class="body">
+        <h3>Prioritise: a transparent score with citations</h3>
+        <span class="where">prioritize.py · evidence.py · policy.py</span>
+        <ul>
+          <li>Signals: severity, scope, fix availability, depth, reachability and exposure. Each one cites a numbered evidence item (E1 advisory, E2 path, E3 scope, E4 fix, E5 reachability, E6 scan).</li>
+          <li>Bands P1–P4, with flags such as “no fix” or “depth unknown”. An optional <code>depguard.policy.json</code> turns this into a pass/fail verdict.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">07</span>
+      <div class="body">
+        <h3>Explain: Claude, but only from evidence</h3>
+        <span class="where">ai/context.py · anthropic_provider.py · grounding.py · template_provider.py</span>
+        <ul>
+          <li>Claude receives a redacted context of at most 6 KB: the finding, its evidence and the fix candidates. It never receives your source code.</li>
+          <li>The reply must match a JSON schema. A grounding validator strips any version, advisory id or citation that is not in the evidence. Without an API key, a deterministic template writes the explanation.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step key">
+      <span class="num">08</span>
+      <div class="body">
+        <h3>Fix: the smallest change that clears the advisory</h3>
+        <span class="where">remediation/candidates.py · batch.py · generic.py · patch.py</span>
+        <ul>
+          <li><b>npm</b>: uses real registry metadata to try a direct bump, a parent bump (simulated), a nested <code>overrides</code> entry, or reports “no safe upgrade”. Results are ranked by least change and re-checked against OSV. Diffs keep your <code>package.json</code> indentation, line endings and BOM.</li>
+          <li><b>Other stacks</b>: the smallest fixed version that clears <em>every</em> advisory on the package, plus the package-manager command (<code>pip install</code>, <code>go get</code>, <code>cargo update --precise</code>, <code>composer require</code>, …). The diff is real where the pin is plain text: <code>requirements.txt</code>, <code>go.mod</code>, or a page's <code>&lt;script src&gt;</code>.</li>
+          <li><b>Plan all fixes</b> merges every finding into one change and reports conflicts instead of hiding them.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step key">
+      <span class="num">09</span>
+      <div class="body">
+        <h3>Verify (npm): prove it in a disposable container</h3>
+        <span class="where">verify/runner.py · verify/modes.py · worker/Dockerfile · worker/entry.sh</span>
+        <ul>
+          <li>Nothing runs until you approve. The dialog lists exactly what will run. The edit is applied to a copy, then: resolve → test (no network) → OSV rescan → before/after comparison.</li>
+          <li>Other stacks and websites are clearly marked “not verified”, and the Approve button is not offered for them.</li>
+        </ul>
+      </div>
+    </li>
+    <li class="step">
+      <span class="num">10</span>
+      <div class="body">
+        <h3>Report: resolved, still present, new, unverifiable</h3>
+        <span class="where">report/compare.py · export.py · sbom.py</span>
+        <ul>
+          <li>The VERIFIED seal appears only when the target advisory is gone <em>and</em> tests ran and passed. Test results are kept separate from the scan result.</li>
+          <li>Exports: JSON, Markdown, self-contained HTML (with its own CSP), <code>.patch</code>, and a CycloneDX 1.5 SBOM with the right purl for every ecosystem (<code>pkg:pypi/…</code>, <code>pkg:golang/…</code>, …).</li>
+        </ul>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<section>
+  <span class="eyebrow">Worked example · vuln-demo</span>
+  <h2>One finding, end to end</h2>
+  <div class="trace">
+    <div class="chain" aria-label="Dependency path">
+      <span>root</span><span class="arrow">→</span><span>express@4.17.1</span><span class="arrow">→</span><span>body-parser@1.19.0</span><span class="arrow">→</span><span class="hit">qs@6.7.0</span>
+    </div>
+    <p class="muted"><code>qs@6.7.0</code> matches <b>GHSA-hrpp-h998-j3pp</b> (high, prototype pollution), fixed in <code>6.7.3</code>. It is transitive and in production scope, reached through two paths. <code>index.js:1</code> imports <code>express</code>, so reachability is “Possible”.</p>
+    <ul class="ev">
+      <li><span class="id">E1</span><span>Advisory, severity and affected range, taken from OSV.</span></li>
+      <li><span class="id">E2</span><span>Path: depth 2, 2 paths from the root, read from <code>package-lock.json</code>.</span></li>
+      <li><span class="id">E3</span><span>Scope prod: it ships with the application.</span></li>
+      <li><span class="id">E4</span><span>Fixed in 6.7.3, according to the advisory.</span></li>
+      <li><span class="id">E5</span><span>express, which pulls in qs, is imported at <code>index.js:1</code>.</span></li>
+      <li><span class="id">E6</span><span>Scanner, version and timestamp.</span></li>
+    </ul>
+    <p class="muted">The fix is a <b>parent bump</b> of express, so the newer body-parser pulls a fixed qs. After approval, the container resolves, runs <code>npm test</code> with no network, and rescans. The report shows the advisory as <b>Resolved</b> and 22 findings drop to 9.</p>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">How a score is built</span>
+  <h2>Priority, shown as points</h2>
+  <div class="score" role="img" aria-label="Illustrative priority breakdown for qs@6.7.0">
+    <div class="bar"><span>Severity (high)</span><span class="track"><span class="fill" style="width: 70%"></span></span><span class="pts">high</span></div>
+    <div class="bar"><span>Scope (prod)</span><span class="track"><span class="fill" style="width: 55%"></span></span><span class="pts">prod</span></div>
+    <div class="bar"><span>Fix available</span><span class="track"><span class="fill" style="width: 45%"></span></span><span class="pts">yes</span></div>
+    <div class="bar"><span>Depth 2</span><span class="track"><span class="fill" style="width: 30%"></span></span><span class="pts">+5</span></div>
+    <div class="bar"><span>Reachability</span><span class="track"><span class="fill" style="width: 35%"></span></span><span class="pts">+6</span></div>
+  </div>
+  <p class="small">Bars show relative weight. The exact points for each signal are in the finding drawer, and every row links to the evidence item it comes from.</p>
+</section>
+
+<section>
+  <span class="eyebrow">Coverage</span>
+  <h2>Supported stacks</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Stack</th><th>What is read</th><th>Reachability</th><th>Fix output</th></tr></thead>
+      <tbody>
+        <tr><td>Node.js</td><td><code>package-lock.json</code> v2/v3</td><td>JS/TS imports</td><td>Diff + sandbox verification</td></tr>
+        <tr><td>Python</td><td>uv / poetry / Pipfile locks, pinned requirements (pip-compile edges)</td><td>import/from + aliases</td><td>Command + <code>requirements.txt</code> diff</td></tr>
+        <tr><td>Go</td><td><code>go.mod</code> with <code>replace</code></td><td>Import paths</td><td><code>go get</code> + <code>go.mod</code> diff</td></tr>
+        <tr><td>Rust</td><td><code>Cargo.lock</code> + <code>Cargo.toml</code> dev-deps</td><td><code>use</code> / <code>extern crate</code></td><td><code>cargo update --precise</code></td></tr>
+        <tr><td>PHP</td><td><code>composer.lock</code> (+ json)</td><td>Unknown</td><td><code>composer require/update</code></td></tr>
+        <tr><td>Ruby</td><td><code>Gemfile.lock</code> + Gemfile groups</td><td><code>require</code></td><td><code>bundle update --conservative</code></td></tr>
+        <tr><td>.NET</td><td><code>packages.lock.json</code></td><td>Unknown</td><td><code>dotnet add package</code></td></tr>
+        <tr><td>Java</td><td><code>gradle.lockfile</code></td><td>Unknown</td><td>Dependency constraint</td></tr>
+        <tr><td>Website</td><td>CDN URLs (cdnjs, jsDelivr, unpkg, Google, code.jquery, bootstrapcdn), versioned file names, <code>?ver=</code>, 27 license banners</td><td>Loaded by the page</td><td><code>&lt;script&gt;</code> include diff</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="eyebrow">Security model</span>
+  <h2>Why it is safe to point at untrusted code</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>The API never executes uploads</h3>
+      <ul>
+        <li>Lockfiles are parsed as data with Python's own TOML and JSON parsers.</li>
+        <li>No package manager is called by the API. Only the worker image runs npm.</li>
+        <li>Untrusted text is never placed in <code>innerHTML</code>. The UI builds DOM nodes with <code>dom.h()</code> under a strict same-origin CSP.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Live sites without SSRF</h3>
+      <ul>
+        <li>http(s) on ports 80/443 only, and <em>every</em> resolved IP must be public. Loopback, private, link-local (including 169.254.169.254), CGNAT, and mapped/6to4/Teredo forms are blocked.</li>
+        <li>The connection is pinned to the vetted IP, using the Host header and SNI. DNS rebinding cannot swap the target.</li>
+        <li>At most 5 redirects, each re-checked. Byte caps, no cookies, no proxies, no JavaScript.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>AI is grounded and redacted</h3>
+      <ul>
+        <li>Tokens, keys, JWTs and URL credentials are redacted before anything is logged or sent.</li>
+        <li>Evidence is passed as data, never as instructions. Anything the model invents is stripped.</li>
+      </ul>
+    </div>
+  </div>
+  <pre class="term" aria-label="Worker container flags"><span class="c"># verification stages (worker/entry.sh), flags from verify/modes.py</span>
+<span class="a">resolve</span>  npm install --package-lock-only --ignore-scripts &amp;&amp; npm ci --ignore-scripts
+         --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges
+         --pids-limit 256 --memory 1g --cpus 1 --user node
+<span class="a">test</span>     npm test --if-present          <span class="c"># same flags + --network none</span></pre>
+</section>
+
+<section>
+  <span class="eyebrow">Code map</span>
+  <h2>Where things live</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Path</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td><code>backend/app/intake.py</code></td><td>Safe extraction, stack-aware project discovery, picker options</td></tr>
+        <tr><td><code>backend/app/stacks/</code></td><td>Lockfile parsers for Python, Go, Rust, PHP, Ruby, .NET and Gradle, sharing one <code>Builder</code></td></tr>
+        <tr><td><code>backend/app/lockfile.py</code>, <code>graph.py</code></td><td>npm parsing, Node-style resolution, paths, depth, scope, <code>Graph.explicit()</code></td></tr>
+        <tr><td><code>backend/app/versions.py</code></td><td>Version ordering per ecosystem</td></tr>
+        <tr><td><code>backend/app/scanner/</code></td><td>OSV API/CLI, recorded replay, normaliser, cache, <code>record</code> tool</td></tr>
+        <tr><td><code>backend/app/web/</code></td><td><code>fetch.py</code> (SSRF guard), <code>detect.py</code> (library rules), <code>site.py</code> (scan + graph)</td></tr>
+        <tr><td><code>backend/app/prioritize.py</code>, <code>evidence.py</code>, <code>reachability.py</code>, <code>policy.py</code></td><td>Scoring, evidence E1–E6, import analysis, pass/fail policy</td></tr>
+        <tr><td><code>backend/app/ai/</code></td><td>Context builder, Claude and template providers, grounding validator</td></tr>
+        <tr><td><code>backend/app/remediation/</code></td><td>npm planner, batch plan, generic planner for other stacks, patch writer</td></tr>
+        <tr><td><code>backend/app/verify/</code>, <code>worker/</code></td><td>Docker / demo-local / mock executors, runner, worker image</td></tr>
+        <tr><td><code>backend/app/report/</code></td><td>Before/after comparison, JSON/MD/HTML exports, CycloneDX</td></tr>
+        <tr><td><code>frontend/js/views/</code></td><td>Landing (unified input), scan rail, findings, graph (d3), fix, plan, verify, report</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <pre class="term"><span class="c"># run it</span>
+python tasks.py setup      <span class="c"># venv, deps, Playwright</span>
+python tasks.py dev        <span class="c"># http://localhost:8000</span>
+python tasks.py check      <span class="c"># ruff + 553 unit/API tests</span>
+python tasks.py e2e        <span class="c"># 66 Playwright tests</span>
+python tasks.py rehearse   <span class="c"># offline demo run with checklist</span></pre>
+</section>
+
+<section>
+  <span class="eyebrow">How it was built</span>
+  <h2>Sixteen phases, each behind a green gate</h2>
+  <div class="phases">
+    <div class="phase"><span class="p">P0–P1</span><span class="t">Shell, intake, jobs</span><span class="d">FastAPI, SQLite job store, SSE events, hostile-zip defences.</span></div>
+    <div class="phase"><span class="p">P2–P3</span><span class="t">Graph + scanner</span><span class="d">Node-style resolution, OSV adapter, recorded samples.</span></div>
+    <div class="phase"><span class="p">P4–P5</span><span class="t">Priority + graph view</span><span class="d">Evidence-cited scoring, findings UI, d3 dependency graph.</span></div>
+    <div class="phase"><span class="p">P6</span><span class="t">Grounded AI</span><span class="d">Claude with schema output and a grounding validator.</span></div>
+    <div class="phase"><span class="p">P7–P9</span><span class="t">Fix, verify, report</span><span class="d">Least-change planner, Docker sandbox, before/after seal.</span></div>
+    <div class="phase"><span class="p">P10–P11</span><span class="t">Advanced + polish</span><span class="d">Reachability, SBOM, policy, batch plan, a11y, offline demo.</span></div>
+    <div class="phase"><span class="p">P12</span><span class="t">Any tech stack</span><span class="d">Eight ecosystems, per-ecosystem versions, generic fixes.</span></div>
+    <div class="phase"><span class="p">P13</span><span class="t">Live websites</span><span class="d">SSRF-safe fetcher, 40+ detection rules, include diffs.</span></div>
+    <div class="phase"><span class="p">P14–P15</span><span class="t">GitHub links + docs</span><span class="d">Full link parsing, unified input, docs, this walkthrough.</span></div>
+  </div>
+</section>
+
+<section class="rec" id="next">
+  <span class="eyebrow">Recommendation</span>
+  <h2>Next feature: <em>verify fixes for every stack</em></h2>
+  <p class="lede">DepGuard's promise is “proves it in an isolated container”, but today that proof exists only for npm. A Python, Go or Rust user gets a correct command and diff, labelled “not verified”. That is honest, but it is also the largest gap between what the product claims and what it delivers. Closing it makes every new stack from P12 a first-class citizen.</p>
+
+  <div class="cols">
+    <div class="box">
+      <h3>Why this, why now</h3>
+      <ul>
+        <li><b>Trust:</b> the VERIFIED seal is the product's signature moment. Today 7 of 8 lockfile stacks can never earn it.</li>
+        <li><b>Reuse:</b> the runner, stage model, log redaction, rescan and comparison are already stack-agnostic. Only the commands and images are npm-specific.</li>
+        <li><b>Safety needs it:</b> some ecosystems execute code while resolving (Python build backends, Rust <code>build.rs</code>, Ruby native extensions). That can only happen in the sandbox, never in the API.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>What to change</h3>
+      <ul>
+        <li><code>verify/recipes.py</code> (new): one <code>Recipe</code> per stack with image, resolve command, test command, lockfile, and whether resolve needs network.</li>
+        <li><code>worker/</code>: add <code>python:3.12-slim</code>, <code>golang:1.23</code> and <code>rust:1.82-slim</code> images pinned by digest. <code>entry.sh</code> takes a recipe id, never a command.</li>
+        <li><code>remediation/generic.py</code>: emit real <code>edits</code> (file + old/new text), not only a diff, so the runner can apply them to the workspace copy.</li>
+        <li><code>verify/runner.py</code>: pick the recipe from <code>meta.json</code>, rescan the new lockfile with <code>stacks.BY_ID[stack].load()</code>, then reuse <code>compare</code>.</li>
+        <li><code>routes/verify.py</code> and <code>fix.js</code>: drop <code>E_VERIFY_UNSUPPORTED</code> for stacks that have a recipe, and show that stack's own command list in the approval dialog.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Recipes (first three)</h3>
+      <ul>
+        <li><b>pip</b>: <code>pip install --only-binary=:all: -r requirements.txt</code> (no sdist builds, so no setup.py runs), then <code>pytest -q</code> with no network.</li>
+        <li><b>Go</b>: <code>go mod download &amp;&amp; go mod tidy</code>, then <code>go test ./...</code> with <code>GOFLAGS=-mod=mod</code> and no network.</li>
+        <li><b>Cargo</b>: <code>cargo update -p x --precise v &amp;&amp; cargo fetch</code>, then <code>cargo test --offline</code>.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Risks and how to contain them</h3>
+      <ul>
+        <li>Image size and pull time: build images on first use and cache them. The UI says “preparing Python sandbox”.</li>
+        <li>Code runs during resolve: the same flags as npm (<code>--read-only</code>, <code>--cap-drop ALL</code>, non-root, pids/memory/CPU caps). Network is allowed only during resolve.</li>
+        <li>Projects without tests: the seal stays “partially verified”, as it does for npm today.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box">
+    <h3>Definition of done</h3>
+    <ul>
+      <li><code>test_recipes.py</code>: each recipe's exact argv and container flags (no user-controlled strings).</li>
+      <li>Docker-marked tests: the <code>python-demo</code> <code>pyyaml 5.3.1 → 5.4</code> fix reaches VERIFIED, and a Go fixture <code>golang.org/x/net</code> bump passes <code>go test</code>.</li>
+      <li>e2e: Python demo → Propose a fix → Approve → verification terminal → report seal.</li>
+      <li>SECURITY.md lists every new stage and flag. Effort: about one phase (5–6 tasks).</li>
+    </ul>
+  </div>
+
+  <h3>After that, in order</h3>
+  <div class="backlog">
+    <div class="bitem"><span class="rank">2</span><div><b>yarn.lock and pnpm-lock.yaml</b><p class="why">Many npm projects use these lockfiles and are currently turned away with a hint. Both parse cleanly into <code>Graph.explicit()</code>.</p></div><div class="tags"><span class="tag s">small</span><span class="tag">high reach</span></div></div>
+    <div class="bitem"><span class="rank">3</span><div><b>CISA KEV and EPSS in the priority score</b><p class="why">“Known exploited” and exploit probability are the strongest public signals for what to fix first. Both are free, cacheable feeds, and fit as an E7 evidence item.</p></div><div class="tags"><span class="tag s">small</span><span class="tag">better ranking</span></div></div>
+    <div class="bitem"><span class="rank">4</span><div><b>CI mode: GitHub Action, SARIF and PR comments</b><p class="why">The policy file already gives pass/fail. Running it on every PR turns a one-off scan into a guardrail.</p></div><div class="tags"><span class="tag m">medium</span><span class="tag">adoption</span></div></div>
+    <div class="bitem"><span class="rank">5</span><div><b>Edges for flat lockfiles</b><p class="why">Resolve <code>go.mod</code> and <code>pip freeze</code> parents from registry metadata (or <code>go mod graph</code> in the worker), so “path not recorded” becomes a real path and depth.</p></div><div class="tags"><span class="tag m">medium</span><span class="tag">accuracy</span></div></div>
+    <div class="bitem"><span class="rank">6</span><div><b>Rendered website scans in the worker</b><p class="why">Load the page in headless Chromium <em>inside the sandbox</em>, behind an egress proxy that applies the same SSRF rules. Read runtime globals (<code>jQuery.fn.jquery</code>, <code>React.version</code>) to catch bundled and lazily loaded libraries.</p></div><div class="tags"><span class="tag l">large</span><span class="tag">coverage</span></div></div>
+  </div>
+</section>
+
+<footer>
+  DepGuard AI · findings are evidence (an installed version inside an advisory range), never proof of exploitability · state as of P15, 20 Oct 2026.
+</footer>
+
+</div>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'neutral' });
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "alias-app",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "alias-app",
+      "dependencies": {
+        "@scope/pkg": "^1.0.0",
+        "my-alias": "npm:real-pkg@^2.0.0"
+      }
+    },
+    "node_modules/@scope/pkg": {
+      "version": "1.0.0",
+      "dependencies": {
+        "my-alias": "^2.0.0"
+      }
+    },
+    "node_modules/my-alias": {
+      "name": "real-pkg",
+      "version": "2.0.0"
+    }
+  }
+}

@@ -43,7 +43,8 @@ export function constellation(canvas, { reduced = false, seed = 7 } = {}) {
   const rand = rng(seed);
   const nodes = buildTree(rand);
   const deep = nodes.map((n, i) => i).filter((i) => nodes[i].depth >= 3);
-  const colors = { hot: cssVar('--sev-critical') || '#FF3B5C', accent: cssVar('--accent') || '#C8FF4D' };
+  const colors = { hot: cssVar('--sev-critical') || '#FF3B5C', accent: cssVar('--accent') || '#C8FF4D',
+    edge: cssVar('--edge') || 'rgba(255,255,255,0.1)', node: cssVar('--text-2') || '#6B7486' };
   let w = 0, hgt = 0, dpr = 1, raf = 0, visible = true;
   let burst = null;
   let lastIgnite = -Infinity;
@@ -86,11 +87,11 @@ export function constellation(canvas, { reduced = false, seed = 7 } = {}) {
       ctx.moveTo(p.x, p.y);
       ctx.lineTo(n.x, n.y);
     }
-    ctx.strokeStyle = 'rgba(255,255,255,0.075)';
+    ctx.strokeStyle = colors.edge;
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.fillStyle = 'rgba(167,176,192,0.55)';
+    ctx.fillStyle = colors.node;
     ctx.beginPath();
     for (const n of nodes) {
       const r = n.depth === 0 ? 3.2 : Math.max(1.1, 2.4 - n.depth * 0.25);

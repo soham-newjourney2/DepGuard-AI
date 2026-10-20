@@ -1,0 +1,41 @@
+{
+  "name": "opt-app",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "opt-app",
+      "dependencies": {
+        "a": "^1.0.0"
+      },
+      "optionalDependencies": {
+        "fsevents": "^2.0.0"
+      }
+    },
+    "node_modules/a": {
+      "version": "1.0.0",
+      "optionalDependencies": {
+        "gone": "^1.0.0"
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "vue": "^3.0.0"
+      },
+      "peerDependenciesMeta": {
+        "vue": {
+          "optional": true
+        }
+      }
+    },
+    "node_modules/fsevents": {
+      "version": "2.3.3",
+      "optional": true
+    },
+    "node_modules/react": {
+      "version": "18.2.0",
+      "peer": true
+    }
+  }
+}

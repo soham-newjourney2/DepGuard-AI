@@ -1,0 +1,613 @@
+[
+ {
+  "advisory": "GHSA-3g43-6gmg-66jw",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.2"
+  ]
+ },
+ {
+  "advisory": "GHSA-3p68-rc4w-qgx5",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.0",
+   "1.15.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-43fc-jf86-j433",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.30.3",
+   "1.13.5"
+  ]
+ },
+ {
+  "advisory": "GHSA-4w2v-q235-vp99",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.21.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-5c9x-8gcm-mpgx",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-62hf-57xw-28j9",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-6chq-wfr3-2hj9",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-7q8q-rj6j-mhjq",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.33.0",
+   "1.18.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-898c-q2cr-xwhg",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.32.0",
+   "1.16.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-cph5-m8f7-6c5x",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.21.2"
+  ]
+ },
+ {
+  "advisory": "GHSA-fvcv-3m26-pcqx",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.0",
+   "1.15.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-hfxv-24rg-xrqf",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.32.0",
+   "1.16.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-j5f8-grm9-p9fc",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.32.0",
+   "1.16.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-jr5f-v2jv-69x6",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.30.0",
+   "1.8.2"
+  ]
+ },
+ {
+  "advisory": "GHSA-m7pr-hjqh-92cm",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-mmx7-hfxf-jppx",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.33.0",
+   "1.18.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-p92q-9vqr-4j8v",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.32.0",
+   "1.16.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-pf86-5x62-jrwf",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-pjwm-pj3p-43mv",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.32.0",
+   "1.16.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-pmwg-cvhr-8vh7",
+  "package": "axios@0.21.0",
+  "severity": "high",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-vf2m-468p-8v99",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-w9j2-pvgh-6h63",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-wf5p-g6vw-rhxx",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.28.0",
+   "1.6.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-xhjh-pmcv-23jw",
+  "package": "axios@0.21.0",
+  "severity": "low",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-xx6v-rp6x-q39c",
+  "package": "axios@0.21.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.31.1",
+   "1.15.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-grv7-fg5c-xmjg",
+  "package": "braces@2.3.2",
+  "severity": "high",
+  "fixed_versions": [
+   "3.0.3"
+  ]
+ },
+ {
+  "advisory": "GHSA-vfj7-8cjw-p6xm",
+  "package": "braces@2.3.2",
+  "severity": "high",
+  "fixed_versions": []
+ },
+ {
+  "advisory": "GHSA-3xgq-45jj-v275",
+  "package": "cross-spawn@5.1.0",
+  "severity": "high",
+  "fixed_versions": [
+   "6.0.6",
+   "7.0.5"
+  ]
+ },
+ {
+  "advisory": "GHSA-vcc3-ghjq-m6fr",
+  "package": "decode-uri-component@0.2.2",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.5.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-ghr5-ch3p-vcr6",
+  "package": "ejs@3.1.5",
+  "severity": "medium",
+  "fixed_versions": [
+   "3.1.10"
+  ]
+ },
+ {
+  "advisory": "GHSA-phwq-j96m-2c2q",
+  "package": "ejs@3.1.5",
+  "severity": "critical",
+  "fixed_versions": [
+   "3.1.7"
+  ]
+ },
+ {
+  "advisory": "GHSA-pfrx-2q88-qq97",
+  "package": "got@6.7.1",
+  "severity": "medium",
+  "fixed_versions": [
+   "11.8.5",
+   "12.1.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-2qvq-rjwj-gvw9",
+  "package": "handlebars@4.5.3",
+  "severity": "medium",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-2w6w-674q-4c4q",
+  "package": "handlebars@4.5.3",
+  "severity": "critical",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-3mfm-83xf-c92r",
+  "package": "handlebars@4.5.3",
+  "severity": "high",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-442j-39wm-28r2",
+  "package": "handlebars@4.5.3",
+  "severity": "low",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-765h-qjxv-5f44",
+  "package": "handlebars@4.5.3",
+  "severity": "critical",
+  "fixed_versions": [
+   "4.7.7"
+  ]
+ },
+ {
+  "advisory": "GHSA-8r5x-fm3f-whwj",
+  "package": "handlebars@4.5.3",
+  "severity": "critical",
+  "fixed_versions": [
+   "4.7.10"
+  ]
+ },
+ {
+  "advisory": "GHSA-9cx6-37pm-9jff",
+  "package": "handlebars@4.5.3",
+  "severity": "high",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-f2jv-r9rf-7988",
+  "package": "handlebars@4.5.3",
+  "severity": "critical",
+  "fixed_versions": [
+   "4.7.7"
+  ]
+ },
+ {
+  "advisory": "GHSA-p8wg-vrv2-v86f",
+  "package": "handlebars@4.5.3",
+  "severity": "critical",
+  "fixed_versions": [
+   "4.7.10"
+  ]
+ },
+ {
+  "advisory": "GHSA-xhpv-hc6g-r9c6",
+  "package": "handlebars@4.5.3",
+  "severity": "high",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-xjpj-3mr7-gcpf",
+  "package": "handlebars@4.5.3",
+  "severity": "high",
+  "fixed_versions": [
+   "4.7.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-xw65-4hp5-5hc7",
+  "package": "handlebars@4.5.3",
+  "severity": "medium",
+  "fixed_versions": [
+   "4.7.10"
+  ]
+ },
+ {
+  "advisory": "GHSA-8cf7-32gw-wr33",
+  "package": "jsonwebtoken@8.5.1",
+  "severity": "high",
+  "fixed_versions": [
+   "9.0.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-hjrf-2m68-5959",
+  "package": "jsonwebtoken@8.5.1",
+  "severity": "medium",
+  "fixed_versions": [
+   "9.0.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-qwph-4952-7xr6",
+  "package": "jsonwebtoken@8.5.1",
+  "severity": "medium",
+  "fixed_versions": [
+   "9.0.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-29mw-wpgm-hmr9",
+  "package": "lodash@4.17.15",
+  "severity": "medium",
+  "fixed_versions": [
+   "4.17.21"
+  ]
+ },
+ {
+  "advisory": "GHSA-35jh-r3h4-6jhm",
+  "package": "lodash@4.17.15",
+  "severity": "high",
+  "fixed_versions": [
+   "4.17.21"
+  ]
+ },
+ {
+  "advisory": "GHSA-f23m-r3pf-42rh",
+  "package": "lodash@4.17.15",
+  "severity": "medium",
+  "fixed_versions": [
+   "4.18.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-p6mc-m468-83gw",
+  "package": "lodash@4.17.15",
+  "severity": "high",
+  "fixed_versions": [
+   "4.17.19"
+  ]
+ },
+ {
+  "advisory": "GHSA-r5fr-rjxr-66jc",
+  "package": "lodash@4.17.15",
+  "severity": "high",
+  "fixed_versions": [
+   "4.18.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-xxjr-mmjv-4gpg",
+  "package": "lodash@4.17.15",
+  "severity": "medium",
+  "fixed_versions": [
+   "4.17.23"
+  ]
+ },
+ {
+  "advisory": "GHSA-5v2h-r2cx-5xgj",
+  "package": "marked@0.3.6",
+  "severity": "high",
+  "fixed_versions": [
+   "4.0.10"
+  ]
+ },
+ {
+  "advisory": "GHSA-7px7-7xjx-hxm8",
+  "package": "marked@0.3.6",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.3.7"
+  ]
+ },
+ {
+  "advisory": "GHSA-p9wx-2529-fp83",
+  "package": "marked@0.3.6",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.3.17"
+  ]
+ },
+ {
+  "advisory": "GHSA-rrrm-qjm4-v8hf",
+  "package": "marked@0.3.6",
+  "severity": "high",
+  "fixed_versions": [
+   "4.0.10"
+  ]
+ },
+ {
+  "advisory": "GHSA-x5pg-88wf-qq4p",
+  "package": "marked@0.3.6",
+  "severity": "high",
+  "fixed_versions": [
+   "0.3.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-952p-6rrq-rcjv",
+  "package": "micromatch@3.1.10",
+  "severity": "medium",
+  "fixed_versions": [
+   "4.0.8"
+  ]
+ },
+ {
+  "advisory": "GHSA-vh95-rmgr-6w4m",
+  "package": "minimist@0.0.10",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.2.1",
+   "1.2.3"
+  ]
+ },
+ {
+  "advisory": "GHSA-xvch-5gv4-984h",
+  "package": "minimist@0.0.10",
+  "severity": "critical",
+  "fixed_versions": [
+   "0.2.4",
+   "1.2.6"
+  ]
+ },
+ {
+  "advisory": "GHSA-8hfj-j24r-96c4",
+  "package": "moment@2.29.1",
+  "severity": "high",
+  "fixed_versions": [
+   "2.29.2"
+  ]
+ },
+ {
+  "advisory": "GHSA-wc69-rhjr-hc9g",
+  "package": "moment@2.29.1",
+  "severity": "high",
+  "fixed_versions": [
+   "2.29.4"
+  ]
+ },
+ {
+  "advisory": "GHSA-r683-j2x4-v87g",
+  "package": "node-fetch@2.6.0",
+  "severity": "high",
+  "fixed_versions": [
+   "2.6.7",
+   "3.1.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-w7rc-rwvf-8q5r",
+  "package": "node-fetch@2.6.0",
+  "severity": "low",
+  "fixed_versions": [
+   "2.6.1",
+   "3.0.0-beta.9"
+  ]
+ },
+ {
+  "advisory": "GHSA-q4v7-4rhw-9hqm",
+  "package": "node-serialize@0.0.4",
+  "severity": "critical",
+  "fixed_versions": []
+ },
+ {
+  "advisory": "GHSA-c2qf-rxjj-qqgw",
+  "package": "semver@5.7.1",
+  "severity": "high",
+  "fixed_versions": [
+   "5.7.2",
+   "6.3.1",
+   "7.5.2"
+  ]
+ },
+ {
+  "advisory": "GHSA-5c6j-r48x-rmvq",
+  "package": "serialize-javascript@2.1.0",
+  "severity": "high",
+  "fixed_versions": [
+   "7.0.3"
+  ]
+ },
+ {
+  "advisory": "GHSA-h9rv-jmmf-4pgx",
+  "package": "serialize-javascript@2.1.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "2.1.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-hxcc-f52p-wc94",
+  "package": "serialize-javascript@2.1.0",
+  "severity": "high",
+  "fixed_versions": [
+   "3.1.0"
+  ]
+ },
+ {
+  "advisory": "GHSA-cf4h-3jhx-xvhq",
+  "package": "underscore@1.12.0",
+  "severity": "critical",
+  "fixed_versions": [
+   "1.12.1"
+  ]
+ },
+ {
+  "advisory": "GHSA-qpx9-hpmf-5gmw",
+  "package": "underscore@1.12.0",
+  "severity": "medium",
+  "fixed_versions": [
+   "1.13.8"
+  ]
+ },
+ {
+  "advisory": "GHSA-776f-qx25-q3cc",
+  "package": "xml2js@0.4.23",
+  "severity": "medium",
+  "fixed_versions": [
+   "0.5.0"
+  ]
+ }
+]

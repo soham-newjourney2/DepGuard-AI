@@ -1,0 +1,219 @@
+{
+ "cve_with_ghsa_alias": {
+  "id": "CVE-2099-0001",
+  "aliases": [
+   "GHSA-aaaa-bbbb-cccc"
+  ],
+  "summary": "Prototype pollution in demo-lib",
+  "details": "Long details.",
+  "published": "2099-01-01T00:00:00Z",
+  "modified": "2099-01-02T00:00:00Z",
+  "severity": [
+   {
+    "type": "CVSS_V3",
+    "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"
+   }
+  ],
+  "affected": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "demo-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "1.2.3"
+       }
+      ]
+     },
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "2.0.0"
+       },
+       {
+        "fixed": "2.0.5"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "other-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "9.9.9"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "references": [
+   {
+    "type": "ADVISORY",
+    "url": "https://github.com/advisories/GHSA-aaaa-bbbb-cccc"
+   },
+   {
+    "type": "WEB",
+    "url": "javascript:alert(1)"
+   },
+   {
+    "type": "WEB",
+    "url": "https://github.com/advisories/GHSA-aaaa-bbbb-cccc"
+   }
+  ]
+ },
+ "ghsa_same_advisory": {
+  "id": "GHSA-aaaa-bbbb-cccc",
+  "aliases": [
+   "CVE-2099-0001",
+   "CVE-2099-0009"
+  ],
+  "summary": "dup",
+  "affected": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "demo-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "1.2.3"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "v4_only": {
+  "id": "GHSA-v4v4-v4v4-v4v4",
+  "summary": "v4 scored",
+  "severity": [
+   {
+    "type": "CVSS_V4",
+    "score": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:H/SC:N/SI:N/SA:N"
+   }
+  ],
+  "affected": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "demo-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "1.0.0"
+       },
+       {
+        "last_affected": "1.9.0"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "db_severity": {
+  "id": "GHSA-dbdb-dbdb-dbdb",
+  "details": "First line summary\nmore",
+  "database_specific": {
+   "severity": "MODERATE"
+  },
+  "affected": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "demo-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "1.1.0"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "no_severity": {
+  "id": "OSV-2099-1",
+  "summary": "no score",
+  "affected": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "demo-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "1.5.0"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "withdrawn": {
+  "id": "GHSA-wwww-wwww-wwww",
+  "withdrawn": "2099-02-01T00:00:00Z",
+  "summary": "gone",
+  "affected": [
+   {
+    "package": {
+     "ecosystem": "npm",
+     "name": "demo-lib"
+    },
+    "ranges": [
+     {
+      "type": "SEMVER",
+      "events": [
+       {
+        "introduced": "0"
+       },
+       {
+        "fixed": "1.2.3"
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "mono",
+  "version": "1.0.0",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "version": "1.0.0",
+      "name": "mono",
+      "workspaces": [
+        "packages/*"
+      ]
+    },
+    "packages/lib": {
+      "name": "lib",
+      "version": "0.1.0",
+      "dependencies": {
+        "left": "^1.0.0"
+      }
+    },
+    "node_modules/lib": {
+      "resolved": "packages/lib",
+      "link": true
+    },
+    "node_modules/left": {
+      "version": "1.0.0"
+    }
+  }
+}

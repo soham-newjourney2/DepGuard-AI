@@ -7,6 +7,7 @@
 @font-face { font-family: "Instrument Serif"; font-style: normal; font-display: swap; src: url("../assets/fonts/instrument-serif-latin-400-normal.woff2") format("woff2"); }
 
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 html {
   color-scheme: dark;
@@ -47,7 +48,7 @@ body::before {
 
 body::after {
   background:
-    radial-gradient(ellipse 120% 90% at 50% 0%, transparent 40%, rgba(0, 0, 0, .55) 100%),
+    radial-gradient(ellipse 120% 90% at 50% 0%, transparent 40%, var(--vignette) 100%),
     url("../assets/noise.svg");
   opacity: 1;
 }
@@ -94,3 +95,13 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+:root[data-theme="light"] body::after { background: url("../assets/noise.svg"); opacity: .5; }
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) { animation: vt-out 160ms var(--ease) both; }
+  ::view-transition-new(root) { animation: vt-in 240ms var(--ease) both; }
+}
+
+@keyframes vt-out { to { opacity: 0; transform: translateY(-4px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(6px); } }

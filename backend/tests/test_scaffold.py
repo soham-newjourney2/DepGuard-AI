@@ -1,4 +1,4 @@
-"""P0.1: repository layout, tooling config and env template match planning.md §3."""
+"""Repository layout, tooling config and env template."""
 
 import re
 import tomllib
@@ -7,16 +7,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 REQUIRED_FILES = [
-    "CLAUDE.md", "planning.md", "README.md", "SECURITY.md", "tasks.py", "pyproject.toml",
+    "README.md", "docs/SECURITY.md", "tasks.py", "pyproject.toml",
     "requirements.txt", "requirements-dev.txt", ".env.example", ".gitignore",
-    "docs/log-archive.md", "LICENSE", ".gitattributes", ".github/workflows/ci.yml",
+    ".gitattributes", ".github/workflows/ci.yml",
 ]
 PACKAGES = ["app", "app/scanner", "app/ai", "app/remediation", "app/verify", "app/report",
-            "app/routes"]
+            "app/routes", "app/stacks", "app/web"]
 ENV_KEYS = {
     "SCANNER", "AI_PROVIDER", "ANTHROPIC_API_KEY", "AI_MODEL", "VERIFY_MODE", "MAX_UPLOAD_MB",
     "MAX_FILES", "MAX_UNZIPPED_MB", "MAX_RATIO", "JOB_TTL_MIN", "SCAN_TIMEOUT_S",
-    "VERIFY_TIMEOUT_S", "RATE_LIMIT",
+    "VERIFY_TIMEOUT_S", "RATE_LIMIT", "LOCAL_ONLY", "WEB_TIMEOUT_S", "WEB_MAX_PAGE_KB",
+    "WEB_MAX_ASSET_KB", "WEB_MAX_ASSETS", "WEB_MAX_TOTAL_MB", "WEB_ALLOW_PRIVATE",
 }
 
 
@@ -53,4 +54,5 @@ def test_tasks_exposes_commands():
     spec = importlib.util.spec_from_file_location("tasks", ROOT / "tasks.py")
     tasks = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(tasks)
-    assert set(tasks.COMMANDS) == {"setup", "dev", "check", "e2e", "docker", "demo"}
+    assert set(tasks.COMMANDS) == {"setup", "dev", "check", "e2e", "docker", "demo", "record",
+                                   "rehearse"}

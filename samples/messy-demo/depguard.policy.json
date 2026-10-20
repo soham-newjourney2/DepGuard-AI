@@ -1,0 +1,5 @@
+{
+  "fail_on": "high",
+  "prod_only": true,
+  "require_fix": false
+}

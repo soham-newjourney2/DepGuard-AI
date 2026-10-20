@@ -1,0 +1,7 @@
+[tool.poetry]
+name = "poetry-app"
+[tool.poetry.dependencies]
+python = "^3.11"
+Django = "^3.2"
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"

@@ -1,4 +1,4 @@
-const state = { health: null, job: null };
+const state = { health: null, job: null, lastSource: null };
 const subs = new Set();
 
 export const get = () => state;
