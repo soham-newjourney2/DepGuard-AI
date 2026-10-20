@@ -1,0 +1,27 @@
+[project]
+name = "depguard-ai"
+version = "0.1.0"
+description = "Explain, fix and verify npm dependency vulnerabilities."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["frontend", "data", "samples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend"]
+asyncio_mode = "auto"
+addopts = "-p no:cacheprovider"
+markers = [
+    "e2e: browser end-to-end tests (playwright)",
+    "docker: requires Docker daemon and worker image",
+    "live: hits real network services (OSV, npm, Anthropic)",
+]
