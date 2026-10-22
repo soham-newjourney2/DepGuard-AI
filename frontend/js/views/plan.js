@@ -5,13 +5,13 @@ import { toast } from '../components/toast.js';
 import { fill, h } from '../dom.js';
 import { shortId } from '../format.js';
 import { go } from '../router.js';
-import * as store from '../store.js';
 import { commandBox, steps } from './fix.js';
 
 const GROUPS = [
   ['included', 'Included', 'ok'],
   ['merged', 'Merged into another change', ''],
   ['conflict', 'Conflicts', 'err'],
+  ['remove', 'Malicious: remove by hand', 'err'],
   ['no_fix', 'No safe upgrade', 'warn'],
 ];
 
@@ -37,10 +37,9 @@ export function plan({ id }) {
     h('section', { class: 'fixgrid' }, left, right)));
 
   async function approve(p) {
-    const mode = store.get().health?.verify_mode ?? 'auto';
     const ok = await confirmModal({
       title: `Approve “${p.title}”?`,
-      body: [h('p', null, 'All included changes are applied together in one disposable workspace:'), steps(mode)],
+      body: [h('p', null, 'All included changes are applied together in one disposable workspace:'), steps()],
       confirmLabel: 'Approve & run verification',
     });
     if (!ok) return;

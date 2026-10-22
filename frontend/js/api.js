@@ -1,4 +1,4 @@
-export class ApiError extends Error {
+class ApiError extends Error {
   constructor(status, { code = 'E_HTTP', message = 'Request failed', hint = '' } = {}) {
     super(message);
     Object.assign(this, { status, code, hint });
@@ -25,7 +25,7 @@ export async function api(path, { method = 'GET', body, headers = {}, signal } =
   return data;
 }
 
-export function uploadZip(file, project) {
+function uploadZip(file, project) {
   const body = new FormData();
   body.append('file', file, file.name);
   if (project) body.append('project', project);
@@ -34,13 +34,10 @@ export function uploadZip(file, project) {
 
 export const startDemo = (sample) => api(`/jobs/demo/${encodeURIComponent(sample)}`, { method: 'POST' });
 
-export const importGithub = (repo, project) => api('/jobs/github', { method: 'POST', body: { repo, project } });
-
-export const scanUrl = (url) => api('/jobs/url', { method: 'POST', body: { url } });
+const importGithub = (repo, project) => api('/jobs/github', { method: 'POST', body: { repo, project } });
 
 export function launch(source, project) {
   if (source.kind === 'demo') return startDemo(source.sample);
   if (source.kind === 'github') return importGithub(source.repo, project);
-  if (source.kind === 'url') return scanUrl(source.url);
   return uploadZip(source.file, project);
 }

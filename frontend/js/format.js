@@ -21,6 +21,13 @@ export function bytes(n) {
 
 export const shortId = (id) => (id || '').slice(0, 8);
 
+export function ordinal(n) {
+  const s = n % 100 >= 10 && n % 100 <= 20 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th');
+  return `${n}${s}`;
+}
+
+export const pct = (p) => Math.floor(p * 100);
+
 export function stamp(iso) {
   const d = new Date(iso);
   if (!iso || Number.isNaN(d.getTime())) return 'an unknown time';

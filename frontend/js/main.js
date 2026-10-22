@@ -14,9 +14,12 @@ import { fix } from './views/fix.js';
 import { verify } from './views/verify.js';
 import { report } from './views/report.js';
 import { plan } from './views/plan.js';
+import { answers } from './views/answers.js';
+import { risks } from './views/risks.js';
 import { shortId } from './format.js';
 
 const ICONS = {
+  risks: ['M12 3l8 3.2v6.1c0 5-3.4 8.8-8 10.5-4.6-1.7-8-5.5-8-10.5V6.2z', 'M12 8v5', 'M12 16h.01'],
   brand: ['M12 3l8 3.2v6.1c0 5-3.4 8.8-8 10.5-4.6-1.7-8-5.5-8-10.5V6.2z', 'M12 10.2a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 0 0 0-4.6z'],
   scan: ['M4 8V5a1 1 0 0 1 1-1h3', 'M16 4h3a1 1 0 0 1 1 1v3', 'M20 16v3a1 1 0 0 1-1 1h-3', 'M8 20H5a1 1 0 0 1-1-1v-3', 'M4 12h16'],
   findings: ['M8 6h12', 'M8 12h12', 'M8 18h12', 'M4 6h.01', 'M4 12h.01', 'M4 18h.01'],
@@ -28,6 +31,7 @@ const NAV = [
   { key: 'scan', label: 'New scan', href: '#/' },
   { key: 'findings', label: 'Findings' },
   { key: 'graph', label: 'Graph' },
+  { key: 'risks', label: 'Supply chain' },
   { key: 'report', label: 'Report' },
 ];
 
@@ -42,7 +46,7 @@ function rail() {
 
 function syncJobNav(shell, job) {
   if (job?.status !== 'ready') return;
-  for (const [key, label] of [['findings', 'Findings'], ['graph', 'Graph'], ['report', 'Report']]) {
+  for (const [key, label] of [['findings', 'Findings'], ['graph', 'Graph'], ['risks', 'Supply chain'], ['report', 'Report']]) {
     const link = shell.querySelector(`[data-nav="${key}"]`);
     link.href = `#/jobs/${job.id}/${key}`;
     link.removeAttribute('aria-disabled');
@@ -57,11 +61,10 @@ function healthPills(target) {
   api('/health')
     .then((hl) => {
       store.set({ health: hl });
-      const aiState = hl.ai === 'anthropic' ? 'ok' : hl.ai === 'off' ? 'off' : 'warn';
       target.replaceChildren(
         ...(hl.local_only ? [pill('Mode', 'local-only', 'warn', 'Only scanner calls leave this machine: AI, registry, GitHub import and verification are off')] : []),
         pill('Scanner', hl.scanner, 'ok', `Advisory source: ${hl.scanner}`),
-        pill('AI', hl.ai, aiState, hl.ai === 'template' ? 'Deterministic template explanations (no API key)' : ''),
+        pill('AI', hl.ai, 'ok', 'Evidence-based explanations: CWE knowledge base, advisory quotes and decision-tree templates. No language model is used.'),
         pill('Verify', hl.verify_mode, hl.verify_mode === 'off' ? 'off' : 'ok', `Verification mode: ${hl.verify_mode}`));
     })
     .catch((err) => target.replaceChildren(pill('API', 'offline', 'err', err.hint || err.message)));
@@ -97,6 +100,7 @@ function commands() {
       { group: 'Go to', label: 'Scan progress', run: () => go(`/jobs/${job.id}`) },
       { group: 'Go to', label: 'Findings', hint: 'f', run: () => go(`/jobs/${job.id}/findings`) },
       { group: 'Go to', label: 'Dependency graph', hint: 'g', run: () => go(`/jobs/${job.id}/graph`) },
+      { group: 'Go to', label: 'Supply chain', keywords: 'risks secrets typosquat malware integrity', run: () => go(`/jobs/${job.id}/risks`) },
       { group: 'Go to', label: 'Report', run: () => go(`/jobs/${job.id}/report`) },
       { group: 'Action', label: 'Plan all fixes', keywords: 'batch', run: () => go(`/jobs/${job.id}/plan`) },
       { group: 'Download', label: 'SBOM (CycloneDX)', run: () => { location.href = `/api/jobs/${job.id}/sbom?download=1`; } },
@@ -139,13 +143,13 @@ function boot() {
   for (const ev of ['dragover', 'drop']) window.addEventListener(ev, (e) => e.preventDefault());
 
   document.addEventListener('route', ({ detail }) => {
-    const job = detail.path.match(/^\/jobs\/([^/]+)(?:\/(findings|graph|fix|verify|report|plan))?/);
+    const job = detail.path.match(/^\/jobs\/([^/]+)(?:\/(findings|graph|fix|verify|report|plan|risks))?/);
     const active = job?.[2] ? (['fix', 'verify', 'plan'].includes(job[2]) ? 'findings' : job[2]) : detail.path === '/' || job ? 'scan' : detail.path.split('/')[1];
     for (const a of shell.querySelectorAll('[data-nav]')) {
       if (a.dataset.nav === active) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     }
-    crumb.textContent = detail.path === '/' ? 'New scan' : job ? `Job ${shortId(job[1])}${job[2] ? ` · ${{ graph: 'Graph', findings: 'Findings', fix: 'Fix', verify: 'Verify', report: 'Report', plan: 'Plan' }[job[2]]}` : ''}` : 'Not found';
+    crumb.textContent = detail.path === '/' ? 'New scan' : job ? `Job ${shortId(job[1])}${job[2] ? ` · ${{ graph: 'Graph', findings: 'Findings', fix: 'Fix', verify: 'Verify', report: 'Report', plan: 'Plan', risks: 'Supply chain' }[job[2]]}` : ''}` : 'Not found';
   });
 
   route('/', landing);
@@ -156,6 +160,8 @@ function boot() {
   route('/jobs/:id/verify/:pid', verify);
   route('/jobs/:id/report', report);
   route('/jobs/:id/plan', plan);
+  route('/jobs/:id/answer-key', answers);
+  route('/jobs/:id/risks', risks);
   store.subscribe((st) => syncJobNav(shell, st.job));
   healthPills(pills);
   start(outlet, notFound);

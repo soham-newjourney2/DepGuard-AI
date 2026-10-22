@@ -2,7 +2,7 @@ import { h } from '../dom.js';
 
 const HUNK = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@(.*)$/;
 
-export function parseDiff(text) {
+function parseDiff(text) {
   const rows = [];
   let a = 0, b = 0;
   for (const line of text.replace(/\n$/, '').split('\n')) {

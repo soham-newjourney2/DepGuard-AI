@@ -16,10 +16,6 @@ const STEPS = [
   ['ready', 'Ready', 'Results available'],
 ];
 const INDEX = Object.fromEntries(STEPS.map(([k], i) => [k, i]));
-const SITE_STEPS = {
-  extracting: ['Fetch', 'Page and scripts as text — nothing runs'],
-  parsing: ['Detect', 'Libraries from CDN URLs and banners'],
-};
 
 const check = () => s('svg', { class: 'step__check', viewBox: '0 0 16 16', 'aria-hidden': 'true' },
   s('path', { d: 'M3.5 8.5l3 3 6-7' }));
@@ -112,7 +108,6 @@ function infoCard(title, copy) {
 
 function readyCard(job) {
   const sm = job.summary || {};
-  const site = sm.site;
   return h('section', { class: 'panel card card--ready' },
     h('div', { class: 'card__head' },
       h('span', { class: 'chip chip--ok' }, 'READY'),
@@ -120,12 +115,14 @@ function readyCard(job) {
       h('span', { class: 'card__eyebrow' }, `Finished ${clock(job.updated_at)}`)),
     h('div', { class: 'kpis' },
       kpi('Findings', sm.findings ?? 0, 'Known advisories matched to installed versions'),
-      kpi(site ? 'Libraries' : 'Packages', sm.packages ?? 0, site ? `Versioned libraries detected on the page (${site.fetched} of ${site.scripts} scripts read)` : 'Installed packages listed in the lockfile'),
+      kpi('Packages', sm.packages ?? 0, 'Installed packages listed in the lockfile'),
       kpi('Fix now', sm.by_band?.P1 ?? 0, 'Findings in priority band P1')),
     (job.warnings || []).map((w) => warningNote(w, job.id)),
     h('div', { class: 'card__actions' },
       sm.findings ? h('a', { class: 'btn btn--primary', href: `#/jobs/${job.id}/findings` }, `View ${sm.findings} finding${sm.findings === 1 ? '' : 's'}`)
         : h('a', { class: 'btn btn--primary', href: `#/jobs/${job.id}/findings` }, 'View result'),
+      sm.risk_counts?.total ? h('a', { class: 'btn btn--ghost', href: `#/jobs/${job.id}/risks` }, `Supply chain · ${sm.risk_counts.total} signal${sm.risk_counts.total === 1 ? '' : 's'}`) : null,
+      job.source === 'demo' ? h('a', { class: 'btn btn--ghost', href: `#/jobs/${job.id}/answer-key` }, 'Compare with answer key') : null,
       h('a', { class: 'btn btn--ghost', href: '#/' }, 'Scan another project')));
 }
 
@@ -231,14 +228,6 @@ export function pipeline({ id }) {
     .then((job) => {
       store.set({ job });
       title.textContent = job.filename || 'Untitled project';
-      if (job.source === 'url') {
-        rows.forEach((r, i) => {
-          const relabel = SITE_STEPS[STEPS[i][0]];
-          if (!relabel) return;
-          r.el.querySelector('.step__label').textContent = relabel[0];
-          r.el.querySelector('.step__desc').textContent = relabel[1];
-        });
-      }
       startedAt = job.created_at;
       tickElapsed();
       timer = setInterval(tickElapsed, 250);

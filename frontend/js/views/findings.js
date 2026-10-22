@@ -5,7 +5,7 @@ import { gauge } from '../components/gauge.js';
 import { countUp } from '../components/kpi.js';
 import { pathchain } from '../components/pathchain.js';
 import { h, icon } from '../dom.js';
-import { policyChip, shortId, stamp } from '../format.js';
+import { ordinal, pct, policyChip, shortId, stamp } from '../format.js';
 import { md } from '../md.js';
 import { go } from '../router.js';
 import * as store from '../store.js';
@@ -22,15 +22,79 @@ const SORTERS = {
   name: (a, b) => a.package.name.localeCompare(b.package.name) || a.package.version.localeCompare(b.package.version),
 };
 
+const EPSS_HIGH = 0.8;
+const tier = (p) => (p >= 0.95 ? 'hot' : p >= EPSS_HIGH ? 'warm' : 'cool');
+const isKev = (f) => f.exploit?.status === 'listed';
+const isEpssHigh = (f) => (f.exploit?.epss?.percentile ?? 0) >= EPSS_HIGH;
+const ABSENT = (date) => `Not in CISA KEV as of ${date}. Absence from the list is not proof it is not exploited.`;
+const EPSS_NOTE = 'EPSS is a model’s estimate of exploitation in the next 30 days, not an observation.';
+const X_HEAD = {
+  listed: 'Known exploited (CISA KEV)', scored: 'Not in CISA KEV · EPSS scored', none: 'Not in CISA KEV · no EPSS score',
+  unknown: 'Unknown: no CVE id', unavailable: 'Unknown: feeds unavailable', off: 'Not checked',
+};
+
+function exploitTag(x) {
+  if (!x) return null;
+  if (x.status === 'listed') return h('span', { class: 'xbadge', title: `${x.kev.cve} is in the CISA Known Exploited Vulnerabilities catalog` }, 'Known exploited');
+  if (x.epss) return h('span', { class: 'epss', dataset: { tier: tier(x.epss.percentile) }, title: `EPSS ${x.epss.epss.toFixed(3)} for ${x.epss.cve} on ${x.epss.date}` }, `EPSS ${ordinal(pct(x.epss.percentile))}`);
+  return null;
+}
+
+function epssMeter(e) {
+  const p = e.percentile;
+  return h('div', { class: 'xmeter', dataset: { tier: tier(p) } },
+    h('p', { class: 'xmeter__row' }, h('span', { class: 'xmeter__v' }, ordinal(pct(p))),
+      h('span', { class: 'muted' }, ` percentile · EPSS ${e.epss.toFixed(3)} · ${e.cve} · ${e.date}`)),
+    h('div', { class: 'xmeter__track', role: 'img', 'aria-label': `EPSS percentile ${pct(p)}` },
+      h('span', { class: 'xmeter__fill', style: { transform: `scaleX(${p})` } }),
+      h('span', { class: 'xmeter__tick', style: { left: '80%' }, title: '80th percentile' }),
+      h('span', { class: 'xmeter__tick', style: { left: '95%' }, title: '95th percentile' })),
+    h('p', { class: 'muted' }, EPSS_NOTE));
+}
+
+function exploitCard(f) {
+  const x = f.exploit;
+  if (!x) return null;
+  const e7 = f.evidence.find((e) => e.kind === 'exploit');
+  const lines = [];
+  if (x.status === 'listed') {
+    const k = x.kev;
+    lines.push(h('dl', { class: 'xkev' },
+      h('dt', null, 'CVE'), h('dd', null, h('code', null, k.cve)),
+      h('dt', null, 'Added'), h('dd', null, k.dateAdded || '—'),
+      h('dt', null, 'Ransomware use'), h('dd', null, k.knownRansomwareCampaignUse || 'Unknown'),
+      k.dueDate ? [h('dt', null, 'CISA due date'), h('dd', null, k.dueDate)] : null,
+      k.requiredAction ? [h('dt', null, 'Required action'), h('dd', null, k.requiredAction)] : null));
+  } else if (x.checked?.kev && x.cves.length) {
+    lines.push(h('p', { class: 'muted' }, ABSENT(x.as_of)));
+  }
+  if (x.epss) lines.push(epssMeter(x.epss));
+  if (x.status === 'none') lines.push(h('p', { class: 'muted' }, `No EPSS score is published for ${x.cves.join(', ')}.`));
+  if (x.status === 'unknown') lines.push(h('p', { class: 'muted' }, 'No CVE id, so exploit data is unknown.'));
+  if (x.status === 'unavailable') lines.push(h('p', { class: 'muted' }, 'CISA KEV and FIRST EPSS could not be reached; that is not a sign it is safe.'));
+  if (x.status === 'off') lines.push(h('p', { class: 'muted' }, 'Exploit signals are off (local-only mode or EXPLOIT_SIGNALS=off).'));
+  return section('Exploitation',
+    h('div', { class: 'xcard', dataset: { status: x.status } },
+      h('p', { class: 'xcard__head' }, x.status === 'listed' ? h('span', { class: 'xbadge' }, 'Known exploited') : null,
+        h('span', null, X_HEAD[x.status]),
+        e7 ? h('button', { class: 'signal__eid', type: 'button', 'aria-label': `Show evidence ${e7.eid}`,
+          onclick: () => document.getElementById(`ev-${e7.eid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }) }, e7.eid) : null),
+      lines));
+}
+
 const sevChip = (sev) => h('span', { class: 'sev', dataset: { sev: sev.label } },
   h('span', { class: 'sev__dot', 'aria-hidden': 'true' }), sev.label,
   sev.score != null ? h('span', { class: 'sev__score' }, sev.score.toFixed(1)) : null);
 
-function kpiStrip(summary) {
+function kpiStrip(summary, items) {
   const sev = summary.by_severity || {};
   const cells = SEVERITIES.filter((s) => s !== 'unknown' || sev.unknown)
     .map((s) => ({ key: s, label: s, value: sev[s] || 0 }));
   cells.push({ key: 'fixnow', label: 'Fix now', value: summary.by_band?.P1 || 0 });
+  if (items.some((f) => f.exploit && f.exploit.status !== 'off')) {
+    cells.push({ key: 'kev', label: 'In CISA KEV', value: items.filter(isKev).length },
+      { key: 'epss', label: 'EPSS ≥80th', value: items.filter(isEpssHigh).length });
+  }
   return h('section', { class: 'kpistrip', 'aria-label': 'Finding counts' }, cells.map((c) => {
     const v = h('span', { class: 'kpistrip__v' }, '0');
     countUp(v, c.value);
@@ -51,10 +115,10 @@ function chipGroup(label, options, active, onToggle) {
 
 function row(item, i, onOpen) {
   const p = item.priority;
-  const b = h('button', { class: 'frow', type: 'button', dataset: { id: item.id, sev: item.advisory.severity.label },
+  const b = h('button', { class: ['frow', item.malicious && 'frow--mal'], type: 'button', dataset: { id: item.id, sev: item.advisory.severity.label },
     style: { '--i': String(Math.min(i, 20)) } },
   h('span', { class: 'frow__bar', 'aria-hidden': 'true' }),
-  h('span', { class: 'frow__sev' }, sevChip(item.advisory.severity)),
+  h('span', { class: 'frow__sev' }, sevChip(item.advisory.severity), item.malicious ? h('span', { class: 'xbadge xbadge--mal' }, 'Malware') : exploitTag(item.exploit)),
   h('span', { class: 'frow__pkg' },
     h('span', { class: 'frow__name' }, `${item.package.name}@${item.package.version}`,
       item.package.ecosystem && item.package.ecosystem !== 'npm' ? h('span', { class: 'eco-badge' }, item.package.ecosystem) : null),
@@ -86,6 +150,8 @@ export function detail(f, { graphHref = '', jobId = '' } = {}) {
       h('div', { class: 'detail__chips' }, sevChip(adv.severity), h('span', { class: 'chip' }, adv.id),
         adv.aliases.slice(0, 3).map((a) => h('span', { class: 'chip chip--dim' }, a)),
         graphHref ? h('a', { class: 'detail__graph', href: graphHref }, 'Show in graph →') : null),
+      f.malicious ? h('p', { class: 'note note--err malnote' }, h('span', { class: 'xbadge xbadge--mal' }, 'Malware'),
+        ' OSV lists this package as malicious. Remove it, reinstall from a cleaned lockfile, and rotate secrets on machines where it was installed. Upgrading is not a fix.') : null,
       h('h2', { class: 'detail__title', id: 'detail-title' }, adv.summary),
       h('p', { class: 'detail__pkg' }, `${f.package.name}@${f.package.version}`, h('span', null, ` · ${f.scope} · ${f.direct ? 'direct' : `depth ${f.depth ?? '?'}`}`)),
       adv.severity.vector ? h('p', { class: 'detail__vector' }, adv.severity.vector, sevSrc) : null,
@@ -101,6 +167,7 @@ export function detail(f, { graphHref = '', jobId = '' } = {}) {
         s.eid ? h('button', { class: 'signal__eid', type: 'button', 'aria-label': `Show evidence ${s.eid}`,
           onclick: () => document.getElementById(`ev-${s.eid}`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }) }, s.eid) : null))),
       p.flags.length ? h('p', { class: 'note note--warn' }, p.flags.map((fl) => h('span', { class: 'chip chip--warn' }, fl))) : null),
+    exploitCard(f),
     section(`Dependency path${f.paths.length === 1 ? '' : 's'}`,
       h('div', { class: 'paths' }, f.paths.map((path) => pathchain(path))),
       more > 0 ? h('p', { class: 'muted' }, `and ${more} more path${more === 1 ? '' : 's'}`) : null),
@@ -124,7 +191,7 @@ export function detail(f, { graphHref = '', jobId = '' } = {}) {
 }
 
 export function findings({ id }) {
-  const state = { items: [], q: '', sort: 'priority', sev: new Set(), scope: new Set(), direct: null, fix: null, sel: -1, openId: null };
+  const state = { items: [], q: '', sort: 'priority', sev: new Set(), scope: new Set(), direct: null, fix: null, exploit: new Set(), sel: -1, openId: null };
   const head = h('header', { class: 'fhead' }, h('span', { class: 'eyebrow' }, `Job ${shortId(id)}`), h('h1', { class: 'fhead__title' }, 'Findings'), h('p', { class: 'fhead__meta' }));
   const kpis = h('div', { class: 'skeleton skeleton--kpi' });
   const search = h('input', { class: 'search__input', type: 'search', placeholder: 'Search package, advisory, CVE…', 'aria-label': 'Search findings', autocomplete: 'off' });
@@ -146,6 +213,7 @@ export function findings({ id }) {
       && (!state.scope.size || state.scope.has(f.scope))
       && (state.direct === null || f.direct === state.direct)
       && (state.fix === null || f.fix_available === state.fix)
+      && (!state.exploit.size || (state.exploit.has('kev') && isKev(f)) || (state.exploit.has('epss') && isEpssHigh(f)))
       && (!q || [f.package.name, f.advisory.id, ...f.advisory.aliases, f.advisory.summary].join(' ').toLowerCase().includes(q)));
     return SORTERS[state.sort] ? [...out].sort(SORTERS[state.sort]) : out;
   };
@@ -160,6 +228,9 @@ export function findings({ id }) {
       chipGroup('Scope', SCOPES.filter((s) => scopes.has(s)).map((s) => [s, s]), (v) => state.scope.has(v), toggle(state.scope)),
       chipGroup('Depth', [[true, 'direct'], [false, 'transitive']], (v) => state.direct === v, tri('direct')),
       chipGroup('Fix', [[true, 'fix available'], [false, 'no fix']], (v) => state.fix === v, tri('fix')),
+      state.items.some((f) => isKev(f) || isEpssHigh(f))
+        ? chipGroup('Exploited', [['kev', 'in KEV'], ['epss', 'EPSS ≥80th']].filter(([v]) => state.items.some(v === 'kev' ? isKev : isEpssHigh)),
+          (v) => state.exploit.has(v), toggle(state.exploit)) : null,
       h('label', { class: 'sort' }, 'Sort ', (() => {
         const sel = h('select', { 'aria-label': 'Sort findings' }, [['priority', 'Priority'], ['severity', 'Severity'], ['name', 'Name']]
           .map(([v, t]) => h('option', { value: v, selected: state.sort === v }, t)));
@@ -184,7 +255,7 @@ export function findings({ id }) {
   }
 
   function clearFilters() {
-    Object.assign(state, { q: '', sev: new Set(), scope: new Set(), direct: null, fix: null });
+    Object.assign(state, { q: '', sev: new Set(), scope: new Set(), direct: null, fix: null, exploit: new Set() });
     search.value = '';
     render();
   }
@@ -253,7 +324,7 @@ export function findings({ id }) {
       meta.push(h('a', { class: 'btn btn--ghost btn--sm', href: `#/jobs/${id}/plan` }, 'Plan all fixes'));
       if (scan.source === 'cache') meta.push(h('span', { class: 'chip chip--warn' }, `Cached scan from ${stamp(scan.ts)} — live scanner unavailable.`));
       head.querySelector('.fhead__meta').replaceChildren(...meta);
-      kpis.replaceWith(kpiStrip(sm));
+      kpis.replaceWith(kpiStrip(sm, data.items));
       if (!data.total) {
         el.querySelector('.fcontrols').hidden = true;
         body.replaceChildren(h('section', { class: 'panel card card--ready clean' },

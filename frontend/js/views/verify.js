@@ -8,7 +8,7 @@ import { follow } from '../sse.js';
 const STAGES = [['approved', 'Approved'], ['resolve', 'Resolve'], ['test', 'Test'], ['rescan', 'Rescan'], ['result', 'Result']];
 const FINAL = new Set(['verified', 'verify_failed', 'unable_to_verify']);
 const ORDER = { approved: 0, resolving: 1, testing: 2, rescanning: 3 };
-const MODE = { docker: 'Docker container', 'demo-local': 'Local · bundled sample', mock: 'Simulated (test mode)', off: 'Off', auto: 'Auto' };
+const MODE = { 'demo-local': 'Local · bundled sample', mock: 'Simulated (test mode)', off: 'Off', auto: 'Auto' };
 const OUTCOME = {
   verified: ['ok', 'Verified', 'The advisory no longer matches and the tests exited 0.'],
   verify_failed: ['err', 'Verification failed', ''],

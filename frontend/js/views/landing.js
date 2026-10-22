@@ -41,6 +41,9 @@ function dropZone() {
     onclick: () => begin({ kind: 'demo', sample: 'messy-demo' }) }, 'Messy demo (73 issues)');
   const pydemo = h('button', { class: 'btn btn--ghost', type: 'button', 'data-action': 'demo-py',
     onclick: () => begin({ kind: 'demo', sample: 'python-demo' }) }, 'Python demo');
+  const scdemo = h('button', { class: 'btn btn--ghost', type: 'button', 'data-action': 'demo-sc',
+    title: 'Scan-only project with planted malware, git, typosquat and secret signals',
+    onclick: () => begin({ kind: 'demo', sample: 'supplychain-demo' }) }, 'Supply-chain demo');
   let depth = 0, busy = false;
 
   const zone = h('section', { class: 'drop', 'aria-label': 'Upload a project' },
@@ -51,7 +54,7 @@ function dropZone() {
         h('div', null,
           h('p', { class: 'drop__title' }, 'Drop a project .zip'),
           h('p', { class: 'drop__meta' }, `Any lockfile: npm, Python, Go, Rust, PHP, Ruby, .NET, Gradle · ≤ ${limitMb()} MB`))),
-      h('div', { class: 'drop__actions' }, choose, demo, messy, pydemo),
+      h('div', { class: 'drop__actions' }, choose, demo, messy, pydemo, scdemo),
       file, status, input));
 
   function limitMb() {
@@ -107,23 +110,21 @@ function dropZone() {
 
 const REPO = /^[A-Za-z0-9][A-Za-z0-9-]{0,38}\/[A-Za-z0-9._-]{1,100}(@[A-Za-z0-9._/-]{1,200})?$/;
 const GITHUB = /^(?:(?:https?:\/\/)?(?:www\.)?github\.com\/|git@github\.com:)\S+$/i;
-const SITE = /^(?:https?:\/\/)?[^\s/@:]+\.[^\s/@:]{2,}(?::\d+)?(?:[/?#]\S*)?$/i;
-const KIND_LABEL = { github: 'GitHub repo', url: 'Website', none: '' };
+const KIND_LABEL = { github: 'GitHub repo', none: '' };
 
-export function classify(value) {
+function classify(value) {
   const v = value.trim();
   if (!v) return 'none';
   if (REPO.test(v) || GITHUB.test(v)) return 'github';
-  if (SITE.test(v)) return 'url';
   return 'invalid';
 }
 
 function githubForm() {
-  const input = h('input', { class: 'gh__input', type: 'text', placeholder: 'github.com/owner/repo  ·  owner/repo@ref  ·  https://example.com', 'aria-label': 'GitHub repository or website URL', autocomplete: 'off', spellcheck: 'false' });
+  const input = h('input', { class: 'gh__input', type: 'text', placeholder: 'github.com/owner/repo  ·  owner/repo@ref', 'aria-label': 'GitHub repository link', autocomplete: 'off', spellcheck: 'false' });
   const kind = h('span', { class: 'gh__kind', 'aria-live': 'polite' });
   const button = h('button', { class: 'btn btn--ghost btn--sm', type: 'submit' }, 'Scan');
-  const form = h('form', { class: 'gh', 'aria-label': 'Scan a GitHub repository or a live website' },
-    h('span', { class: 'gh__label' }, 'or paste a public GitHub repo or a live website'), input, kind, button);
+  const form = h('form', { class: 'gh', 'aria-label': 'Scan a GitHub repository' },
+    h('span', { class: 'gh__label' }, 'or paste a public GitHub repo'), input, kind, button);
   if (store.get().health?.local_only) form.hidden = true;
   input.addEventListener('input', () => {
     const k = classify(input.value);
@@ -135,12 +136,12 @@ function githubForm() {
     const value = input.value.trim();
     const k = classify(value);
     if (k === 'none' || k === 'invalid') {
-      toast('Paste a GitHub link (github.com/owner/repo), owner/repo@ref, or a website URL.', { kind: 'err' });
+      toast('Paste a GitHub link (github.com/owner/repo) or owner/repo@ref.', { kind: 'err' });
       return;
     }
     button.disabled = true;
     try {
-      const source = k === 'github' ? { kind: 'github', repo: value } : { kind: 'url', url: value };
+      const source = { kind: 'github', repo: value };
       const { job_id } = await launch(source);
       store.set({ lastSource: source });
       go(`/jobs/${job_id}`);
@@ -160,10 +161,10 @@ export function landing() {
       canvas,
       h('div', { class: 'container' },
         h('div', { class: 'hero__copy' },
-          h('span', { class: 'eyebrow' }, 'npm · Python · Go · Rust · PHP · Ruby · .NET · live sites · OSV advisories'),
+          h('span', { class: 'eyebrow' }, 'npm · Python · Go · Rust · PHP · Ruby · .NET · Java · OSV advisories'),
           h('h1', { class: 'hero__title' }, 'Know which dependency ', h('em', 'actually'), ' puts you at risk.'),
           h('p', { class: 'hero__lede' },
-            'DepGuard traces the path from your project to each vulnerable package, proposes the smallest defensible fix, and proves it in an isolated container.'),
+            'DepGuard traces the path from your project to each vulnerable package, proposes the smallest defensible fix, and proves it with a real install, your tests and a fresh rescan.'),
           dropZone(),
           githubForm(),
           h('p', { class: 'hero__note' }, 'Nothing you upload runs on the API server. Findings are evidence, not verdicts.')))),
@@ -181,7 +182,7 @@ export function landing() {
         h('article', { class: 'how__item' },
           h('span', { class: 'how__num' }, '03'),
           h('h2', { class: 'how__title' }, 'Verify'),
-          h('p', { class: 'how__copy' }, 'Approve, then watch an isolated install, your tests and a fresh rescan — before anything ships.')))));
+          h('p', { class: 'how__copy' }, 'Approve, then watch a clean install, your tests and a fresh rescan — before anything ships.')))));
 
   const fx = constellation(canvas, { reduced: reducedMotion() });
   return { el, destroy: () => fx.destroy() };

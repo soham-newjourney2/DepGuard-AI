@@ -13,6 +13,7 @@ const LABELS = {
   override: 'npm override',
   'lock-update': 'Lockfile update',
   none: 'No safe upgrade',
+  remove: 'Remove the package',
 };
 const BLURB = {
   'direct-bump': 'Change the version you declare in package.json.',
@@ -20,6 +21,7 @@ const BLURB = {
   override: 'Force the fixed version under its parent with npm "overrides".',
   'lock-update': 'Move the transitive package to the fixed version with your package manager.',
   none: 'No published version is outside the affected range.',
+  remove: 'OSV lists this package as malicious: remove it and rotate secrets; upgrading is not a fix.',
 };
 
 function blurb(p) {
@@ -43,17 +45,14 @@ export function commandBox(cmd) {
     h('pre', { class: 'cmdbox__pre' }, code));
 }
 
-export function steps(mode) {
-  const isolated = mode === 'docker';
+export function steps() {
   return h('ol', { class: 'runlist' },
     h('li', null, 'Copy the project into a disposable workspace and apply the package.json change shown in the diff.'),
     h('li', null, h('code', null, 'npm install --package-lock-only --ignore-scripts'), ' — resolves the new lockfile. Network on, install scripts off.'),
     h('li', null, h('code', null, 'npm ci --ignore-scripts'), ' then ', h('code', null, 'npm test --if-present'),
-      isolated ? ' — no network, read-only filesystem, all capabilities dropped, non-root user, hard timeout.' : ' — your own test script only; nothing user-supplied.'),
+      ' — your own test script only; nothing user-supplied.'),
     h('li', null, 'Rescan the new lockfile with OSV and compare before/after.'),
-    h('p', { class: 'runlist__note' }, isolated
-      ? 'Runs in a Docker container (node:20-slim). Nothing from your project runs on the API server.'
-      : 'Verification ran without container isolation (bundled sample only).'));
+    h('p', { class: 'runlist__note' }, 'Verification ran on this machine with install scripts disabled (bundled sample only).'));
 }
 
 function changeChip(c) {
@@ -105,7 +104,7 @@ export function fix({ id, fid }) {
       : p.verifiable === false
         ? null
         : h('button', { class: 'btn btn--primary', type: 'button', disabled: !canVerify }, 'Approve & verify');
-    if (!started && approve) approve.addEventListener('click', () => onApprove(p, mode));
+    if (!started && approve) approve.addEventListener('click', () => onApprove(p));
     fill(detail,
       p.command ? commandBox(p.command) : null,
       p.diff ? diffView(p.diff) : p.command ? null : h('section', { class: 'panel card' },
@@ -118,14 +117,14 @@ export function fix({ id, fid }) {
       h('div', { class: 'fixactions' },
         approve,
         p.diff ? h('a', { class: 'btn btn--ghost', href: `/api/jobs/${id}/patch?pid=${p.pid}`, download: `depguard-${p.pid}.patch` }, 'Download .patch') : null,
-        p.verifiable === false && p.strategy !== 'none' ? h('span', { class: 'muted' }, 'Sandbox verification covers npm projects; run your own tests after applying this.') : null,
+        p.verifiable === false && p.strategy !== 'none' ? h('span', { class: 'muted' }, 'Verification covers the bundled npm demos; run your own tests after applying this.') : null,
         mode === 'off' ? h('span', { class: 'muted' }, 'Verification is turned off on this server.') : null));
   }
 
-  async function onApprove(p, mode) {
+  async function onApprove(p) {
     const ok = await confirmModal({
       title: `Approve “${p.title}”?`,
-      body: [h('p', null, 'Nothing changes in your repository. DepGuard will run exactly this:'), steps(mode)],
+      body: [h('p', null, 'Nothing changes in your repository. DepGuard will run exactly this:'), steps()],
       confirmLabel: 'Approve & run verification',
     });
     if (!ok) return;

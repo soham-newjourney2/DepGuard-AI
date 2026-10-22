@@ -1,4 +1,6 @@
 import { api } from '../api.js';
+import { comparison, keyCopy } from './answers.js';
+import { KINDS } from './risks.js';
 import { diffView } from '../components/diff.js';
 import { countUp } from '../components/kpi.js';
 import { fill, h } from '../dom.js';
@@ -12,7 +14,7 @@ const SECTIONS = [
   ['newly_detected', 'Newly detected', 'err', 'Matched only after the change.'],
   ['unable_to_verify', 'Unable to verify', 'warn', 'Targeted by the fix, but verification could not run.'],
 ];
-const MODES = { docker: 'Docker container', 'demo-local': 'Local · bundled sample', mock: 'Simulated (test mode)' };
+const MODES = { 'demo-local': 'Local · bundled sample', mock: 'Simulated (test mode)' };
 
 const bySeverity = (items) => SEV.map((s) => [s, items.filter((i) => i.severity === s).length]).filter(([, n]) => n);
 
@@ -71,6 +73,28 @@ function audit(r) {
     h('ul', { class: 'limits' }, a.limitations.map((l) => h('li', null, l))));
 }
 
+function risksSection(id, risks) {
+  const n = risks.items.length;
+  return h('section', { class: 'rsec rsec--risks', dataset: { kind: n ? 'warn' : 'ok' } },
+    h('h2', { class: 'rsec__title' }, 'Supply-chain & hygiene ', h('span', { class: 'rsec__n' }, String(n))),
+    h('p', { class: 'muted' }, 'Static signals, not verdicts. Only OSV MAL- records are called malicious; secret values are never stored or shown.'),
+    n ? h('p', { class: 'akreport' }, KINDS.filter(([k]) => risks.counts.by_kind[k]).map(([k, label]) => h('span', { class: `chip ${k === 'malware' ? 'chip--err' : 'chip--warn'}` }, `${risks.counts.by_kind[k]} ${label.toLowerCase()}`)),
+      h('a', { class: 'btn btn--ghost btn--sm', href: `#/jobs/${id}/risks` }, 'Open supply chain'))
+      : h('p', { class: 'muted' }, 'No supply-chain signals.'));
+}
+
+function answerKey(id) {
+  const sec = h('section', { class: 'rsec rsec--answers' }, h('h2', { class: 'rsec__title' }, 'Answer key'),
+    h('div', { class: 'skeleton skeleton--kpi' }));
+  api(`/jobs/${id}/answer-key`)
+    .then((r) => fill(sec, h('h2', { class: 'rsec__title' }, 'Answer key'),
+      r.key ? h('p', { class: 'muted' }, keyCopy(r.key)) : null,
+      r.available ? comparison(r)[0] : h('p', { class: 'muted' }, r.reason),
+      h('div', { class: 'akreport' }, h('a', { class: 'btn btn--ghost btn--sm', href: `#/jobs/${id}/answer-key` }, 'Open side by side'))))
+    .catch((err) => fill(sec, h('h2', { class: 'rsec__title' }, 'Answer key'), h('p', { class: 'muted' }, err.message)));
+  return sec;
+}
+
 export function report({ id, query = {} }) {
   const body = h('div', { class: 'rbody' }, h('div', { class: 'skeleton skeleton--kpi' }));
   const el = h('div', { class: 'reportview' }, h('div', { class: 'container fwrap' },
@@ -100,6 +124,8 @@ export function report({ id, query = {} }) {
           r.fix?.diff ? h('a', { class: 'btn btn--ghost btn--sm', href: `/api/jobs/${id}/patch?pid=${r.fix.pid}`, download: '' }, '.patch') : null,
           h('a', { class: 'btn btn--ghost btn--sm', href: `/api/jobs/${id}/sbom?download=1`, download: '' }, 'SBOM (CycloneDX)')),
         testsCard(r),
+        r.project.source === 'demo' ? answerKey(id) : null,
+        r.risks ? risksSection(id, r.risks) : null,
         r.policy ? h('section', { class: ['panel', 'card', 'rpolicy'], dataset: { status: (r.policy.after || r.policy.before).status } },
           h('div', { class: 'card__head' }, h('span', { class: 'card__eyebrow' }, `POLICY · ${r.policy.source}`)),
           h('p', null, describePolicy(r.policy.policy)),

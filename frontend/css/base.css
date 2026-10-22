@@ -66,8 +66,7 @@ button {
   cursor: pointer;
 }
 
-.mono, code, kbd { font-family: var(--font-mono); font-size: .92em; }
-.serif { font-family: var(--font-display); font-style: italic; font-weight: 400; }
+code, kbd { font-family: var(--font-mono); font-size: .92em; }
 
 :focus { outline: none; }
 :focus-visible {

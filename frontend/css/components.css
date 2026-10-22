@@ -478,3 +478,14 @@ code, .ver { font-family: var(--font-mono); font-size: .9em; }
 .cmdbox__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .cmdbox__pre { margin: 0; overflow-x: auto; white-space: pre; font-family: var(--font-mono); font-size: 13px; }
 .note--switch { display: grid; gap: 10px; }
+
+.xp__weak, .xp__quote { display: grid; gap: 6px; margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg-1); }
+.xp__weakhead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.xp__weakname { font-weight: 500; }
+.xp__weakrow { color: var(--text-1); }
+.xp__weakrow b { margin-right: 4px; color: var(--text-0); font-weight: 500; }
+.xp__ext { margin-left: auto; font-size: var(--fs-12); color: var(--accent); text-decoration: none; }
+.xp__ext:hover, .xp__ext:focus-visible { text-decoration: underline; }
+.xp__quote { border-left: 2px solid var(--accent); }
+.xp__quote blockquote { margin: 0; font-size: var(--fs-13); line-height: 1.6; overflow-wrap: anywhere; }
+.xp__quote figcaption { display: flex; align-items: center; gap: 4px; font-size: var(--fs-12); color: var(--text-1); }
