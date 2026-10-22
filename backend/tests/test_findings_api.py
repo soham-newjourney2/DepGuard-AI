@@ -86,7 +86,17 @@ def test_detail(demo):
                 and i["package"]["version"] == "6.7.0")
     f = c.get(f"/api/jobs/{job_id}/findings/{item['id']}").json()
     assert ["root", "express@4.17.1", "qs@6.7.0"] in f["paths"]
-    assert [e["eid"] for e in f["evidence"]] == ["E1", "E2", "E3", "E4", "E5", "E6"]
+    assert [e["eid"] for e in f["evidence"]] == ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"]
+    e8 = f["evidence"][7]
+    assert f["advisory"]["cwes"] and e8["kind"] == "weakness"
+    assert e8["source"].startswith("https://cwe.mitre.org/data/definitions/")
+    x = f["exploit"]
+    assert x["status"] == "scored" and x["cves"] == ["CVE-2022-24999"] and x["kev"] is None
+    assert x["checked"] == {"kev": True, "epss": True} and 0 <= x["epss"]["percentile"] <= 1
+    e7 = f["evidence"][6]
+    assert (e7["kind"], e7["label"], e7["source"]) == ("exploit", "Possible", "first.org EPSS")
+    assert "Not in CISA KEV as of" in e7["text"] and "not an observation" in e7["text"]
+    assert item["exploit"]["status"] == "scored"
     assert f["priority"]["signals"][0] == {"key": "severity", "label": "Severity",
                                            "value": "high", "points": 30, "eid": "E1"}
     assert "6.7.3" in f["evidence"][3]["text"]

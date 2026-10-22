@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from itertools import pairwise
 
 import pytest
 
@@ -148,7 +149,7 @@ def test_store_survives_reopen(tmp_path, clock):
 def test_proposal_transitions():
     for path in (["proposed", "approved", "resolving", "testing", "rescanning", "verified"],
                  ["proposed", "approved", "resolving", "verify_failed"]):
-        for old, new in zip(path, path[1:], strict=False):
+        for old, new in pairwise(path):
             check_transition(PROPOSAL_TRANSITIONS, old, new)
     with pytest.raises(IllegalTransition):
         check_transition(PROPOSAL_TRANSITIONS, "proposed", "testing")

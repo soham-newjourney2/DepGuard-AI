@@ -2,12 +2,12 @@ import httpx
 import pytest
 import respx
 
-from app.config import ROOT
+from app.config import RECORDED
 from app.remediation.registry import ACCEPT, Registry, RegistryError, file_name, trim
 from app.scanner.cache import DiskCache
 
 BASE = "https://npm.test"
-RECORDED = ROOT / "samples" / "_recorded" / "npm"
+RECORDED = RECORDED / "npm"
 DOC = {"name": "@scope/pkg", "dist-tags": {"latest": "1.1.0"}, "versions": {
     "1.0.0": {"dependencies": {"a": "^1.0.0"}, "dist": {"tarball": "https://x"}},
     "1.1.0": {"deprecated": "use 2", "dist": {"tarball": "https://y"}, "engines": {"node": "*"}},

@@ -18,7 +18,13 @@ def finding(summary=HOSTILE):
     return {"advisory": {"id": "GHSA-<b>", "summary": summary,
                          "severity": {"label": "high"}},
             "package": {"name": "evil<pkg>", "version": "1.0.0\"><svg>"}, "scope": "prod",
-            "priority": {"band": "P1"}}
+            "priority": {"band": "P1"},
+            "exploit": {"status": "listed", "cves": ["CVE-2024-0001"], "as_of": "2026-10-22",
+                        "kev": {"cve": "CVE-2024-0001", "dateAdded": "2026-01-01"}, "epss": None,
+                        "checked": {"kev": True, "epss": True}},
+            "evidence": [{"eid": "E7", "kind": "exploit", "label": "Confirmed", "source": "kev",
+                          "text": 'CVE-2024-0001 is in CISA KEV (known ransomware use: "><script>'
+                                  "alert(3)</script>)."}]}
 
 
 def report():
@@ -35,8 +41,13 @@ def report():
                     "comparison": {"target_resolved": True}, "labels": ["<b>label</b>"],
                     "stages": [{"name": "test", "status": "passed", "exit_code": 0,
                                 "duration_ms": 5}]}
-    return export.build(job, [finding()], proposal, verification, [], {"provider": "template",
-                                                                       "model": None})
+    risks = [{"id": "r_1", "kind": "secret", "severity": "high", "confidence": "high",
+              "title": "AWS key in <script>alert(4)</script>.js", "package": None,
+              "location": {"file": "a|b.js", "line": 3}, "evidence": ["AKIA… (20 chars)"],
+              "recommendation": "Rotate it."}]
+    return export.build(job, [finding()], proposal, verification, [], {"provider": "evidence-based",
+                                                                       "model": None},
+                        risks=risks)
 
 
 def test_html_escapes_everything():
@@ -47,12 +58,20 @@ def test_html_escapes_everything():
     assert len(re.findall(r"<script", out, re.I)) == 0
     assert "</pre><script>" not in out
     assert 'class="seal verified">VERIFIED<' in out
+    assert "<th>Exploitation</th>" in out and ">CISA KEV listed</td>" in out
+    assert "&quot;&gt;&lt;script&gt;alert(3)" in out
+    assert "<h2>Supply-chain &amp; hygiene (1)</h2>" in out
+    assert "&lt;script&gt;alert(4)" in out and "<code>a|b.js:3</code>" in out
 
 
 def test_markdown_escapes_tables_and_html():
     out = export.to_markdown(report())
     row = next(line for line in out.splitlines() if line.startswith("| GHSA-"))
-    assert row.count("|") - row.count("\\|") == 6, "pipes inside cells are escaped"
+    assert row.count("|") - row.count("\\|") == 7, "pipes inside cells are escaped"
+    assert "| CISA KEV listed |" in row
+    assert "## Supply-chain & hygiene (1)" in out
+    risk_row = next(line for line in out.splitlines() if line.startswith("| secret |"))
+    assert r"a\|b.js:3" in risk_row and "&lt;script&gt;" in risk_row
     prose = re.sub(r"```diff\n.*?\n```", "", out, flags=re.S)
     assert "<script>" not in prose and "&lt;script&gt;" in prose
     assert out.count("```") == 2, "fence break-outs neutralised"
@@ -65,7 +84,12 @@ def test_json_roundtrip():
     assert r["counts"] == {"before": 1, "after": 0, "resolved": 1, "still_present": 0,
                            "newly_detected": 0, "unable_to_verify": 0}
     assert "Reachability not determined" in r["audit"]["limitations"][0]
-    assert any("deterministic template" in x for x in r["audit"]["limitations"])
+    assert any("No language model is used" in x for x in r["audit"]["limitations"])
+    assert any("Absence from KEV is not proof" in x for x in r["audit"]["limitations"])
+    x = r["classes"]["resolved"][0]["exploit"]
+    assert x["status"] == "listed" and x["label"] == "CISA KEV listed"
+    assert "alert(3)" in x["evidence"]
+    assert r["risks"]["counts"]["by_kind"]["secret"] == 1
 
 
 @pytest.fixture(scope="module")

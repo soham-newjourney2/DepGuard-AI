@@ -5,7 +5,7 @@ import httpx
 import pytest
 import respx
 
-from app.config import ROOT
+from app.config import RECORDED
 from app.scanner.base import Package, ScanError
 from app.scanner.cache import DiskCache
 from app.scanner.fixture import RecordedScanner
@@ -16,7 +16,7 @@ BASE = "https://osv.test"
 QS_ID = "GHSA-hrpp-h998-j3pp"
 QS = Package("qs", "6.7.0")
 LP = Package("left-pad", "1.3.0")
-VULNS = ROOT / "samples" / "_recorded" / "osv" / "vulns"
+VULNS = RECORDED / "osv" / "vulns"
 
 
 def record(vid: str) -> dict:
@@ -139,7 +139,7 @@ def test_cache_ttl(tmp_path):
 
 
 async def test_recorded_scanner_replays(tmp_path):
-    result = await RecordedScanner(ROOT / "samples" / "_recorded" / "osv").scan([QS, LP])
+    result = await RecordedScanner(RECORDED / "osv").scan([QS, LP])
     assert QS_ID in [r["id"] for r in result.vulns_for(QS)] and result.vulns_for(LP) == []
     with pytest.raises(ScanError):
         await RecordedScanner(tmp_path).scan([QS])

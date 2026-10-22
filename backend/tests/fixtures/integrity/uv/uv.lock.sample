@@ -1,0 +1,27 @@
+version = 1
+
+[[package]]
+name = "app"
+version = "0.1.0"
+source = { editable = "." }
+
+[[package]]
+name = "good"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/good-1.0.0.tar.gz", hash = "sha256:00" }
+
+[[package]]
+name = "gitpkg"
+version = "0.2.0"
+source = { git = "https://github.com/someone/gitpkg?rev=abc#abc" }
+
+[[package]]
+name = "urlpkg"
+version = "0.3.0"
+source = { url = "https://evil.example.com/urlpkg-0.3.0.tar.gz" }
+
+[[package]]
+name = "nohash"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }

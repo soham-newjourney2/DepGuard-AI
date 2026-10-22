@@ -10,15 +10,8 @@ def test_health_reports_config(client):
     r = client.get("/api/health")
     assert r.status_code == 200
     assert r.json() == {"status": "ok", "version": __version__, "scanner": "fixture",
-                        "ai": "template", "verify_mode": "mock", "max_upload_mb": 15,
+                        "ai": "evidence-based", "verify_mode": "mock", "max_upload_mb": 15,
                         "local_only": False}
-
-
-def test_ai_auto_uses_anthropic_when_key_set(settings):
-    keyed = settings.model_copy(update={"anthropic_api_key": "sk-test"})
-    assert keyed.ai_effective == "anthropic"
-    off = settings.model_copy(update={"ai_provider": "off"})
-    assert off.ai_effective == "off"
 
 
 def test_env_overrides(monkeypatch, tmp_path):

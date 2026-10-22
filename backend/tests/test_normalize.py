@@ -89,7 +89,8 @@ def test_finding_shape_and_scan_meta(graph):
     [f] = run(graph, {OLD: ["no_severity"]}, source="cache")
     assert set(f) == {"id", "advisory", "package", "affected_ranges", "fixed_versions", "scope",
                       "direct", "depth", "paths", "path_count", "lockfile", "reachability",
-                      "priority", "evidence", "scan"}
+                      "priority", "evidence", "scan", "malicious"}
+    assert f["malicious"] is False
     assert f["scan"] == {"scanner": "fixture", "version": "t", "ts": "2099-01-01T00:00:00.000Z",
                          "source": "cache"}
     assert f["reachability"]["label"] == "Unknown"

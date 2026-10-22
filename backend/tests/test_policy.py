@@ -39,7 +39,8 @@ def test_load_default_valid_and_invalid(tmp_path):
     assert policy.load(tmp_path) == (policy.DEFAULT, "default", None)
     (tmp_path / policy.FILE).write_text(json.dumps({"fail_on": "high", "prod_only": True}))
     assert policy.load(tmp_path) == ({"fail_on": "high", "prod_only": True,
-                                      "require_fix": False}, policy.FILE, None)
+                                      "require_fix": False, "fail_on_risks": "none"},
+                                     policy.FILE, None)
     (tmp_path / policy.FILE).write_text('{"fail_on": "severe", "prod_only": "yes", "x": 1}')
     pol, src, warn = policy.load(tmp_path)
     assert pol == policy.DEFAULT and src == policy.FILE
@@ -48,6 +49,28 @@ def test_load_default_valid_and_invalid(tmp_path):
     assert policy.load(tmp_path)[2].endswith("using the default policy.")
     (tmp_path / policy.FILE).write_text("[1]")
     assert policy.load(tmp_path)[1] == "default"
+
+
+RISKS = [{"id": "r_1", "kind": "secret", "title": "AWS key", "severity": "high"},
+         {"id": "r_2", "kind": "typosquat", "title": "lodahs", "severity": "low"},
+         {"id": "r_3", "kind": "integrity", "title": "workspace", "severity": "info"}]
+
+
+@pytest.mark.parametrize("threshold,ids", [("none", set()), ("critical", set()),
+                                           ("high", {"r_1"}), ("low", {"r_1", "r_2"})])
+def test_fail_on_risks(threshold, ids):
+    pol = {**policy.DEFAULT, "fail_on": "none", "fail_on_risks": threshold}
+    v = policy.evaluate([], pol, "t", RISKS)
+    assert {x["risk_id"] for x in v["violations"]} == ids
+    assert v["status"] == ("fail" if ids else "pass")
+
+
+def test_fail_on_risks_is_validated(tmp_path):
+    (tmp_path / policy.FILE).write_text('{"fail_on_risks": "loud"}')
+    pol, _, warn = policy.load(tmp_path)
+    assert pol["fail_on_risks"] == "none" and "fail_on_risks" in warn
+    assert "supply-chain signals at high or worse" in policy.describe(
+        {**policy.DEFAULT, "fail_on_risks": "high"})
 
 
 def test_describe():

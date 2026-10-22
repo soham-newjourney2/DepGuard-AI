@@ -1,6 +1,12 @@
+import atexit
 import json
+import shutil
+import tempfile
 import time
 from pathlib import Path
+
+from app.config import ROOT
+from app.samples import checkout
 
 ZIPS = Path(__file__).parent / "fixtures" / "zips"
 DONE = {"ready", "failed", "expired"}
@@ -30,3 +36,13 @@ def read_sse(client, job_id: str) -> list[dict]:
             if line.startswith("data: "):
                 events.append(json.loads(line[6:]))
     return events
+
+
+_REAL = Path(tempfile.mkdtemp(prefix="depguard-real-"))
+atexit.register(shutil.rmtree, _REAL, True)
+
+
+def real(src: Path) -> Path:
+    """A shared read-only copy of a bundled folder with manifests under their real names."""
+    dst = _REAL / src.relative_to(ROOT)
+    return dst if dst.is_dir() else checkout(src, dst)

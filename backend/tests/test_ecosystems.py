@@ -3,7 +3,7 @@ import zipfile
 
 import pytest
 from fastapi.testclient import TestClient
-from helpers import wait_job
+from helpers import real, wait_job
 
 from app.config import ROOT
 from app.errors import AppError
@@ -12,7 +12,7 @@ from app.scanner.base import Package, build_result
 from app.scanner.fixture import record
 from app.stacks import BY_ID, found_in, unlocked_in
 
-FIX = ROOT / "backend" / "tests" / "fixtures" / "stacks"
+FIX = real(ROOT / "backend" / "tests" / "fixtures" / "stacks")
 
 
 def load(stack: str, fixture: str):

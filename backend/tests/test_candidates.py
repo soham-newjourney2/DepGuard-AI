@@ -2,8 +2,9 @@ import asyncio
 import json
 
 import pytest
+from helpers import real
 
-from app.config import ROOT
+from app.config import RECORDED, ROOT
 from app.prioritize import enrich
 from app.remediation.candidates import (
     Planner,
@@ -13,14 +14,15 @@ from app.remediation.candidates import (
     split_label,
 )
 from app.remediation.registry import Registry
+from app.samples import load_graph, packages
 from app.scanner.base import Package
 from app.scanner.cache import DiskCache
 from app.scanner.fixture import RecordedScanner
 from app.scanner.normalize import normalize, parse_ver
-from app.scanner.record import load_graph, packages, proposal_summary
+from tools.record import proposal_summary
 
-REC = ROOT / "samples" / "_recorded"
-DEMO = ROOT / "samples" / "vuln-demo"
+REC = RECORDED
+DEMO = real(ROOT / "samples" / "vuln-demo")
 
 
 @pytest.fixture(scope="module")
@@ -63,7 +65,7 @@ def test_direct_bump_express(demo, tmp_path):
 
 
 def test_parent_bump_express_for_qs(demo, tmp_path):
-    f, props = plan(demo, tmp_path, "qs", "6.7.0", "GHSA-hrpp-h998-j3pp")
+    _, props = plan(demo, tmp_path, "qs", "6.7.0", "GHSA-hrpp-h998-j3pp")
     s = by_strategy(props)
     assert list(s) == ["parent-bump", "override"]
     parent = s["parent-bump"]
@@ -101,7 +103,7 @@ def test_least_change_first_and_major_warning(demo, tmp_path):
 
 
 def test_offline_plans_match_recorded_live_plans(demo, tmp_path):
-    graph, findings, manifest = demo
+    _graph, findings, _manifest = demo
     want = json.loads((REC / "vuln-demo.proposals.json").read_text(encoding="utf-8"))
     got = []
     for f in findings:

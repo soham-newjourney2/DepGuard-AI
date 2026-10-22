@@ -1,0 +1,12 @@
+{
+ "demo": "clean-demo",
+ "generated_at": "2026-10-22T06:38:25Z",
+ "lockfile_sha256": "50b6f7e4f3bd6d36346a08103216f1f9fbd4e91d45879c4cc8e9df0aca25e287",
+ "tools": [
+  {
+   "name": "npm audit",
+   "version": "11.8.0"
+  }
+ ],
+ "advisories": []
+}

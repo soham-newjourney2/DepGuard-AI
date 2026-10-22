@@ -5,24 +5,24 @@ import time
 
 import pytest
 from fastapi.testclient import TestClient
-from helpers import wait_job
+from helpers import real, wait_job
 
-from app.config import ROOT, Settings
+from app.config import RECORDED, ROOT, Settings
 from app.main import create_app
 from app.prioritize import enrich
 from app.remediation.batch import plan_all
 from app.remediation.registry import Registry
+from app.samples import load_graph, packages
 from app.scanner.cache import DiskCache
 from app.scanner.fixture import RecordedScanner
 from app.scanner.normalize import normalize
-from app.scanner.record import load_graph, packages
 
-REC = ROOT / "samples" / "_recorded"
+REC = RECORDED
 
 
 @pytest.fixture(scope="module")
 def plan(tmp_path_factory):
-    graph = load_graph(ROOT / "samples" / "vuln-demo")
+    graph = load_graph(real(ROOT / "samples" / "vuln-demo"))
     scanner = RecordedScanner(REC / "osv")
     findings = enrich(normalize(asyncio.run(scanner.scan(packages(graph))), graph))
 
@@ -33,7 +33,7 @@ def plan(tmp_path_factory):
 
     registry = Registry("https://npm.invalid", DiskCache(tmp_path_factory.mktemp("c"), 0),
                         recorded=REC / "npm", offline=True)
-    manifest = (ROOT / "samples" / "vuln-demo" / "package.json").read_text(encoding="utf-8")
+    manifest = (real(ROOT / "samples" / "vuln-demo") / "package.json").read_text(encoding="utf-8")
     return asyncio.run(plan_all(findings, graph.to_json(), manifest, registry, checker))
 
 

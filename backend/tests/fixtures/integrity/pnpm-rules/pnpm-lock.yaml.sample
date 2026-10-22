@@ -1,0 +1,30 @@
+lockfileVersion: '9.0'
+
+importers:
+  .:
+    dependencies:
+      ok:
+        specifier: ^1.0.0
+        version: 1.0.0
+
+packages:
+
+  ok@1.0.0:
+    resolution: {integrity: sha512-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==}
+
+  plain@1.0.0:
+    resolution: {tarball: http://mirror.example.com/plain-1.0.0.tgz}
+
+  tarball@1.0.0:
+    resolution: {integrity: sha512-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==, tarball: https://evil.example.com/t.tgz}
+
+  gitdep@https://codeload.github.com/someone/gitdep/tar.gz/abc:
+    resolution: {tarball: https://codeload.github.com/someone/gitdep/tar.gz/abc}
+    version: 1.0.0
+
+  nohash@1.0.0:
+    resolution: {}
+
+snapshots:
+
+  ok@1.0.0: {}

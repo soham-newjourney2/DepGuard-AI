@@ -1,0 +1,41 @@
+{
+    "packages": [
+        {
+            "name": "good/pkg",
+            "version": "1.0.0",
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/good/pkg/zipball/abc",
+                "reference": "abc",
+                "shasum": ""
+            }
+        },
+        {
+            "name": "plain/pkg",
+            "version": "1.0.0",
+            "dist": {
+                "type": "zip",
+                "url": "http://mirror.example.com/plain.zip",
+                "reference": "abc"
+            }
+        },
+        {
+            "name": "nodist/pkg",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nodist/pkg.git",
+                "reference": "abc"
+            }
+        },
+        {
+            "name": "local/pkg",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../local"
+            }
+        }
+    ],
+    "packages-dev": []
+}

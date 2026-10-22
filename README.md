@@ -1,127 +1,79 @@
 # DepGuard AI
 
-Most dependency scanners hand you a long list of CVEs and leave the rest to you. Which ones actually affect your app? How did that package even get into your project? What's the smallest change that fixes it, and will that change break anything?
+It's late, the release is tomorrow, and you run one last audit. Forty-seven vulnerabilities. A few are critical. Most are in packages you've never heard of, buried four levels deep. Which ones actually matter? How did they get in? And if you bump something, what breaks?
 
-DepGuard tries to answer those questions. You give it a project, a GitHub link or a live website. It shows every vulnerable dependency, the exact path from your code to it, and how urgent it really is. Then it proposes the smallest fix it can justify. For npm projects it can apply that fix in a throwaway Docker container, run your tests and rescan, so you know it worked before you touch your own code.
+You can upgrade everything and hope for the best, or you can ship and hope nobody notices. We're three students, and we built DepGuard AI at a hackathon to see if there was a better way than hoping.
 
-It works with npm, Python, Go, Rust, PHP, Ruby, .NET and Gradle lockfiles, and it can check a public website for outdated JavaScript libraries.
+## What it does
 
-A finding means an installed version falls inside a published advisory's range. That's a strong reason to look, but it isn't proof your app is exploitable, and DepGuard says so in every report.
+Give it a project zip or a GitHub link. For every vulnerable dependency, DepGuard tells you:
 
-## Try it in two minutes
+- **What's wrong:** the advisory that matches the exact version you have installed.
+- **How it got there:** the full chain, like `your app → express → body-parser → qs`.
+- **How urgent it is:** a score you can read line by line. It looks at severity, whether the package ships to production, whether your code imports it, and whether attackers are actually using the flaw (CISA KEV and FIRST EPSS).
+- **What to do:** the smallest fix it can justify. On the bundled demos it applies that fix to a copy, runs the tests and scans again, so you can watch the whole loop.
 
-You need Python 3.11 or newer. Docker is optional.
+It also flags malicious packages, tampered lockfiles, look-alike package names and secrets committed to the code.
 
-```bash
-python tasks.py setup    # creates .venv, installs dependencies and Playwright's Chromium
-python tasks.py dev      # starts the app at http://localhost:8000
-```
+It reads npm, Yarn, pnpm, Python, Go, Rust, PHP, Ruby, .NET and Gradle lockfiles.
 
-Open the app and click **Try the demo project**. It scans a small Express app with 22 known advisories, and works offline because the advisory data is recorded in the repo. There are also a **Messy demo** (73 issues) and a **Python demo** (a Flask app with 38).
+There's no chatbot and no paid API. Explanations are written from the evidence by fixed rules, so they never invent a version number or an advisory.
 
-To scan your own work, drop a zip of your project on the page, or paste a GitHub link or a website address into the box below it.
+## Try it
 
-## How a scan works
-
-1. **Upload or link.** Zips are checked for size, zip bombs and path tricks before anything is extracted. DepGuard then searches the folders for lockfiles. If it finds several projects (say a `backend/` and a `frontend/`), it scans the most likely one and lets you switch to the others with one click.
-2. **Build the dependency graph.** The lockfile becomes a graph, so every vulnerable package comes with the chain that pulls it in, such as `your app → express → body-parser → qs`.
-3. **Check advisories.** Every installed version is checked against [OSV](https://osv.dev), which covers GitHub advisories, CVEs and the ecosystems' own databases.
-4. **Rank by real risk.** Each finding gets a score from severity, whether it ships to production, whether a fix exists, how deep it sits and whether your code imports it. Every point in the score links to the evidence behind it.
-5. **Explain.** With an Anthropic API key, Claude writes a short plain-English explanation. It sees only the evidence, never your source code, and anything it says that isn't backed by that evidence is removed. Without a key, a template does the job.
-6. **Fix.** For npm, DepGuard compares upgrading the package directly, upgrading the parent that pulls it in, or pinning it with an override, and picks the smallest change. For other ecosystems you get the lowest safe version, the command to run (`pip install`, `go get`, `cargo update` and so on) and a diff where the version lives in a plain file. If nothing safe exists, it tells you instead of guessing.
-7. **Verify (npm).** Only after you approve: the change is applied to a copy, dependencies are installed with scripts disabled, your tests run with no network access, and the project is scanned again.
-8. **Report.** You see what was resolved, what's still there and what's new, with downloads as JSON, Markdown, HTML, a `.patch` file or a CycloneDX SBOM.
-
-## What it can read
-
-| Ecosystem | Files it understands |
-|---|---|
-| Node.js | `package-lock.json` (v2 and v3) |
-| Python | `uv.lock`, `poetry.lock`, `Pipfile.lock`, pinned `requirements*.txt` (including pip-compile output) |
-| Go | `go.mod` |
-| Rust | `Cargo.lock` |
-| PHP | `composer.lock` |
-| Ruby | `Gemfile.lock` |
-| .NET | `packages.lock.json` |
-| Java | `gradle.lockfile` |
-| Websites | `<script>` tags pointing at CDNs (cdnjs, jsDelivr, unpkg, Google, code.jquery.com, bootstrapcdn), versioned file names, and license banners inside the scripts |
-
-If a project has a manifest but no lockfile (just `pyproject.toml`, or a `requirements.txt` without pinned versions), DepGuard tells you which command creates one. It never guesses versions.
-
-GitHub links can point at a repo, a branch, a folder (`/tree/main/server`), a file, a commit or a release tag. `owner/repo@ref` works too.
-
-## Keeping untrusted code at arm's length
-
-DepGuard is built to look at code you don't trust, so the server never runs anything from an upload. Lockfiles are read as plain data. Only the disposable worker container installs packages or runs tests, with no extra privileges, a read-only filesystem and no network during tests.
-
-Website scans read the page as text and never execute its JavaScript. They refuse to reach private or internal addresses, even through redirects or DNS tricks.
-
-Everything about a scan is deleted after an hour, or right away if you delete the job.
-
-The full details are in [docs/SECURITY.md](docs/SECURITY.md).
-
-## Configuration
-
-Copy `.env.example` to `.env` and change what you need. The settings you're most likely to touch:
-
-| Setting | Default | What it does |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | empty | Turns on Claude explanations |
-| `VERIFY_MODE` | `auto` | `docker` for real isolation, `off` to disable verification |
-| `LOCAL_ONLY` | `false` | Only advisory lookups leave your machine: no AI, no GitHub imports, no website scans |
-| `MAX_UPLOAD_MB` | `15` | Largest zip accepted |
-| `JOB_TTL_MIN` | `60` | Minutes before a scan and its files are deleted |
-
-The rest are listed in `.env.example`.
-
-To verify fixes for your own uploads, build the worker image once:
+You need Python 3.11+. Node.js 18+ is only needed to verify fixes on the demos.
 
 ```bash
-docker build -t depguard-worker worker
+python tasks.py setup    # create the environment and install everything
+python tasks.py dev      # open http://localhost:8000
 ```
 
-## Project layout
+Click **Try the demo project** to scan a small Express app live against [OSV](https://osv.dev). Then open **Compare with answer key** to check DepGuard's results against a list built independently with `npm audit`. The start page also has a Python demo, a messy demo and a supply-chain demo with problems planted on purpose.
 
-```
-backend/app/
-  intake.py, github.py   safe zip handling, project discovery, GitHub links
-  lockfile.py, graph.py  npm lockfile parsing and the dependency graph
-  stacks/                lockfile readers for Python, Go, Rust, PHP, Ruby, .NET and Gradle
-  web/                   website fetching and library detection
-  scanner/               OSV lookups, caching, recorded data for demos
-  prioritize.py, evidence.py, reachability.py   scoring and the evidence behind it
-  ai/                    explanation prompts and the fact-checking validator
-  remediation/           fix planning and patch generation
-  verify/                runs the worker container
-  report/                before/after comparison, exports, SBOM
-frontend/                the web UI (plain JavaScript modules, no build step)
-worker/                  Dockerfile and entrypoint for the verification sandbox
-samples/                 demo projects and recorded advisory data
-docs/                    security notes, demo script, project walkthrough
-```
+To scan your own project, drop its zip on the start page or paste a GitHub link.
 
-## Working on it
+Before a presentation, `python tasks.py doctor` checks your machine and `python tasks.py rehearse` runs the whole demo once.
 
-```bash
-python tasks.py check     # lint plus the unit and API tests
-python tasks.py e2e       # browser tests with Playwright
-python tasks.py docker    # build the worker image and run the Docker tests
-python tasks.py record    # refresh the recorded demo data from OSV (needs internet)
-python tasks.py rehearse  # run the full demo offline and time each step
-```
+## Safe by design
 
-In the app, `Ctrl/⌘ K` opens a command palette and `?` lists the keyboard shortcuts.
+Even as a hackathon project, DepGuard has to look at code nobody trusts, so we were strict about it. It never runs anything from an upload: lockfiles are read as plain data. The only project it ever installs is one of its own demos, and only after it checks every file against the copy in the repo. Install scripts are turned off. Uploads are deleted after an hour.
 
-## Known limits
+A finding means your installed version falls inside an advisory's range. That's a good reason to look, but it isn't proof your app can be attacked, and DepGuard says so in every report.
 
-- Import detection looks at the code as written. Dynamic imports and code paths inside packages aren't traced, and PHP, .NET and Java imports aren't analysed yet.
-- Sandbox verification only exists for npm. For other ecosystems you get the command and diff, and should run your own tests.
-- Some lockfiles (`go.mod`, `Pipfile.lock`, `gradle.lockfile`, `pip freeze` output) don't record which package depends on which, so those findings show the package without a path.
-- A website scan sees one page. Libraries bundled into minified app code without a version banner, loaded after the page runs, or behind a login won't show up.
-- Passing tests are good evidence, but they don't guarantee there are no regressions.
+DepGuard is a student project, not a commercial security product. It's great for learning and for a second opinion, but don't make it the only thing standing between your code and production.
 
-## More reading
+## Learn more
 
-- [docs/walkthrough.html](docs/walkthrough.html): a step-by-step tour of the whole system, plus ideas for what to build next
-- [docs/demo.md](docs/demo.md): a five-minute demo script and offline rehearsal checklist
-- [docs/SECURITY.md](docs/SECURITY.md): the security model in detail
+- [Walkthrough](docs/walkthrough.md): how a scan works, the five-minute demo, scoring and the safety rules
+- [Project structure](docs/structure.md): a map of the code and where to change things
+
+## Team
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://github.com/soham-newjourney2">
+        <img src="https://github.com/soham-newjourney2.png?size=200" width="110" alt="Soham Chowdhury">
+      </a>
+      <h3>Soham Chowdhury</h3>
+      <sub><b>Team Lead</b> · AI · Backend support</sub><br>
+      <a href="https://github.com/soham-newjourney2">@soham-newjourney2</a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://github.com/Arkoprabho-Roy">
+        <img src="https://github.com/Arkoprabho-Roy.png?size=200" width="110" alt="Arkoprabho Roy">
+      </a>
+      <h3>Arkoprabho Roy</h3>
+      <sub>Backend</sub><br>
+      <a href="https://github.com/Arkoprabho-Roy">@Arkoprabho-Roy</a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://github.com/Saswata427">
+        <img src="https://github.com/Saswata427.png?size=200" width="110" alt="Saswata Biswas">
+      </a>
+      <h3>Saswata Biswas</h3>
+      <sub>UI · Testing</sub><br>
+      <a href="https://github.com/Saswata427">@Saswata427</a>
+    </td>
+  </tr>
+</table>

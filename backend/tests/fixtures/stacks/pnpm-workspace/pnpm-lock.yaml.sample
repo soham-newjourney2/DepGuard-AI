@@ -1,0 +1,53 @@
+lockfileVersion: '9.0'
+
+importers:
+
+  .:
+    devDependencies:
+      lodash:
+        specifier: ^4.17.20
+        version: 4.17.20
+
+  packages/api:
+    dependencies:
+      express:
+        specifier: ^4.17.1
+        version: 4.17.1
+      shared:
+        specifier: workspace:*
+        version: link:../shared
+
+  packages/shared:
+    dependencies:
+      qs:
+        specifier: 6.7.0
+        version: 6.7.0
+
+packages:
+
+  body-parser@1.19.0:
+    resolution: {integrity: sha512-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==}
+
+  express@4.17.1:
+    resolution: {integrity: sha512-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==}
+
+  lodash@4.17.20:
+    resolution: {integrity: sha512-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==}
+
+  qs@6.7.0:
+    resolution: {integrity: sha512-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB==}
+
+snapshots:
+
+  body-parser@1.19.0:
+    dependencies:
+      qs: 6.7.0
+
+  express@4.17.1:
+    dependencies:
+      body-parser: 1.19.0
+      qs: 6.7.0
+
+  lodash@4.17.20: {}
+
+  qs@6.7.0: {}

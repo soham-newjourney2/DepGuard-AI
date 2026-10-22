@@ -1,0 +1,743 @@
+{
+ "demo": "messy-demo",
+ "generated_at": "2026-10-22T06:38:29Z",
+ "lockfile_sha256": "c7df9916cd05db1ab6be66dcb57d41b14b3fbf747e94ccf63549059fdd536e94",
+ "tools": [
+  {
+   "name": "npm audit",
+   "version": "11.8.0"
+  }
+ ],
+ "advisories": [
+  {
+   "id": "GHSA-3g43-6gmg-66jw",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-3p68-rc4w-qgx5",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-43fc-jf86-j433",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-4w2v-q235-vp99",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-5c9x-8gcm-mpgx",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-62hf-57xw-28j9",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-6chq-wfr3-2hj9",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-7q8q-rj6j-mhjq",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-898c-q2cr-xwhg",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-cph5-m8f7-6c5x",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-fvcv-3m26-pcqx",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-hfxv-24rg-xrqf",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-j5f8-grm9-p9fc",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-jr5f-v2jv-69x6",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-m7pr-hjqh-92cm",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-mmx7-hfxf-jppx",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-p92q-9vqr-4j8v",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-pf86-5x62-jrwf",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-pjwm-pj3p-43mv",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-pmwg-cvhr-8vh7",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-vf2m-468p-8v99",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-w9j2-pvgh-6h63",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-wf5p-g6vw-rhxx",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-xhjh-pmcv-23jw",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "low"
+  },
+  {
+   "id": "GHSA-xx6v-rp6x-q39c",
+   "aliases": [],
+   "package": "axios",
+   "version": "0.21.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-grv7-fg5c-xmjg",
+   "aliases": [],
+   "package": "braces",
+   "version": "2.3.2",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-vfj7-8cjw-p6xm",
+   "aliases": [],
+   "package": "braces",
+   "version": "2.3.2",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-3xgq-45jj-v275",
+   "aliases": [],
+   "package": "cross-spawn",
+   "version": "5.1.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-vcc3-ghjq-m6fr",
+   "aliases": [],
+   "package": "decode-uri-component",
+   "version": "0.2.2",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-ghr5-ch3p-vcr6",
+   "aliases": [],
+   "package": "ejs",
+   "version": "3.1.5",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-phwq-j96m-2c2q",
+   "aliases": [],
+   "package": "ejs",
+   "version": "3.1.5",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-pfrx-2q88-qq97",
+   "aliases": [],
+   "package": "got",
+   "version": "6.7.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-2qvq-rjwj-gvw9",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-2w6w-674q-4c4q",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-3mfm-83xf-c92r",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-442j-39wm-28r2",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "low"
+  },
+  {
+   "id": "GHSA-765h-qjxv-5f44",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-8r5x-fm3f-whwj",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-9cx6-37pm-9jff",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-f2jv-r9rf-7988",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-p8wg-vrv2-v86f",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-xhpv-hc6g-r9c6",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-xjpj-3mr7-gcpf",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-xw65-4hp5-5hc7",
+   "aliases": [],
+   "package": "handlebars",
+   "version": "4.5.3",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-8cf7-32gw-wr33",
+   "aliases": [],
+   "package": "jsonwebtoken",
+   "version": "8.5.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-hjrf-2m68-5959",
+   "aliases": [],
+   "package": "jsonwebtoken",
+   "version": "8.5.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-qwph-4952-7xr6",
+   "aliases": [],
+   "package": "jsonwebtoken",
+   "version": "8.5.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-29mw-wpgm-hmr9",
+   "aliases": [],
+   "package": "lodash",
+   "version": "4.17.15",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-35jh-r3h4-6jhm",
+   "aliases": [],
+   "package": "lodash",
+   "version": "4.17.15",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-f23m-r3pf-42rh",
+   "aliases": [],
+   "package": "lodash",
+   "version": "4.17.15",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-p6mc-m468-83gw",
+   "aliases": [],
+   "package": "lodash",
+   "version": "4.17.15",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-r5fr-rjxr-66jc",
+   "aliases": [],
+   "package": "lodash",
+   "version": "4.17.15",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-xxjr-mmjv-4gpg",
+   "aliases": [],
+   "package": "lodash",
+   "version": "4.17.15",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-5v2h-r2cx-5xgj",
+   "aliases": [],
+   "package": "marked",
+   "version": "0.3.6",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-7px7-7xjx-hxm8",
+   "aliases": [],
+   "package": "marked",
+   "version": "0.3.6",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-p9wx-2529-fp83",
+   "aliases": [],
+   "package": "marked",
+   "version": "0.3.6",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-rrrm-qjm4-v8hf",
+   "aliases": [],
+   "package": "marked",
+   "version": "0.3.6",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-x5pg-88wf-qq4p",
+   "aliases": [],
+   "package": "marked",
+   "version": "0.3.6",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-952p-6rrq-rcjv",
+   "aliases": [],
+   "package": "micromatch",
+   "version": "3.1.10",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-vh95-rmgr-6w4m",
+   "aliases": [],
+   "package": "minimist",
+   "version": "0.0.10",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-xvch-5gv4-984h",
+   "aliases": [],
+   "package": "minimist",
+   "version": "0.0.10",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-8hfj-j24r-96c4",
+   "aliases": [],
+   "package": "moment",
+   "version": "2.29.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-wc69-rhjr-hc9g",
+   "aliases": [],
+   "package": "moment",
+   "version": "2.29.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-r683-j2x4-v87g",
+   "aliases": [],
+   "package": "node-fetch",
+   "version": "2.6.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-w7rc-rwvf-8q5r",
+   "aliases": [],
+   "package": "node-fetch",
+   "version": "2.6.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "low"
+  },
+  {
+   "id": "GHSA-q4v7-4rhw-9hqm",
+   "aliases": [],
+   "package": "node-serialize",
+   "version": "0.0.4",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-c2qf-rxjj-qqgw",
+   "aliases": [],
+   "package": "semver",
+   "version": "5.7.1",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-5c6j-r48x-rmvq",
+   "aliases": [],
+   "package": "serialize-javascript",
+   "version": "2.1.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-h9rv-jmmf-4pgx",
+   "aliases": [],
+   "package": "serialize-javascript",
+   "version": "2.1.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  },
+  {
+   "id": "GHSA-hxcc-f52p-wc94",
+   "aliases": [],
+   "package": "serialize-javascript",
+   "version": "2.1.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-cf4h-3jhx-xvhq",
+   "aliases": [],
+   "package": "underscore",
+   "version": "1.12.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "critical"
+  },
+  {
+   "id": "GHSA-qpx9-hpmf-5gmw",
+   "aliases": [],
+   "package": "underscore",
+   "version": "1.12.0",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "high"
+  },
+  {
+   "id": "GHSA-776f-qx25-q3cc",
+   "aliases": [],
+   "package": "xml2js",
+   "version": "0.4.23",
+   "reported_by": [
+    "npm audit"
+   ],
+   "severity": "moderate"
+  }
+ ]
+}

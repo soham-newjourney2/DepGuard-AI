@@ -131,9 +131,9 @@ def test_off_mode_unable_to_verify(make_client):
 
 def test_secrets_never_leave_logs(make_client, monkeypatch):
     class Leaky(modes.MockExecutor):
-        async def run(self, stage, workspace, timeout, on_line, tag):
+        async def run(self, stage, workspace, timeout, on_line):
             on_line("npm http fetch GET https://user:hunter2pass@registry.example.com/x")
-            return await super().run(stage, workspace, timeout, on_line, tag)
+            return await super().run(stage, workspace, timeout, on_line)
 
     monkeypatch.setattr(runner, "MockExecutor", Leaky)
     with make_client() as c:

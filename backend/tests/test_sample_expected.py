@@ -1,23 +1,25 @@
 import json
 
 import pytest
+from helpers import real
 
-from app.config import ROOT
+from app.config import RECORDED, ROOT
+from app.samples import load_graph, packages
 from app.scanner.fixture import RecordedScanner
 from app.scanner.normalize import normalize
-from app.scanner.record import expected, load_graph, packages
+from tools.record import expected, orphans
 
-REC = ROOT / "samples" / "_recorded"
+REC = RECORDED
 
 
 async def findings_for(sample: str) -> list[dict]:
-    graph = load_graph(ROOT / "samples" / sample)
+    graph = load_graph(real(ROOT / "samples" / sample))
     scan = await RecordedScanner(REC / "osv").scan(packages(graph))
     return normalize(scan, graph)
 
 
 @pytest.mark.parametrize("sample", ["vuln-demo", "clean-demo", "messy-demo",
-                                    "python-demo", "site-demo"])
+                                    "python-demo"])
 async def test_sample_matches_expected_offline(sample):
     want = json.loads((REC / f"{sample}.expected.json").read_text(encoding="utf-8"))
     assert expected(await findings_for(sample)) == want
@@ -61,3 +63,8 @@ async def test_python_demo_story():
     assert all(f["direct"] and f["fixed_versions"] for f in yaml)
     werkzeug = next(f for f in findings if f["package"]["name"] == "werkzeug")
     assert ["root", "flask@2.2.2", "werkzeug@2.2.2"] in werkzeug["paths"]
+
+
+def test_recorded_osv_has_no_orphans():
+    keys, files = orphans(REC / "osv")
+    assert keys == [] and files == []

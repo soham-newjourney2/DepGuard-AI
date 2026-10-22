@@ -21,7 +21,7 @@ def open_qs(page, base_url):
 
 def test_p6_template_explanation_with_badge_and_citations(page, base_url, console_errors):
     drawer = open_qs(page, base_url)
-    expect(drawer.locator(".aibadge")).to_have_text("Template")
+    expect(drawer.locator(".aibadge")).to_have_text("Evidence-based (no AI)")
     expect(drawer.locator(".xp__summary")).to_contain_text("qs@6.7.0")
     action = drawer.locator(".xp__block").filter(has_text="Recommended action")
     expect(action).to_contain_text("6.7.3")
@@ -47,6 +47,6 @@ def test_p6_explanation_in_graph_drawer(page, base_url):
     expect(page.locator(".gsvg")).to_have_attribute("data-settled", "true", timeout=10_000)
     page.locator('.gnode[data-label="minimist@0.0.8"]').dispatch_event("click")
     drawer = page.get_by_role("dialog", name="Finding detail")
-    expect(drawer.locator(".aibadge")).to_have_text("Template")
+    expect(drawer.locator(".aibadge")).to_have_text("Evidence-based (no AI)")
     expect(drawer.locator(".xp__block").filter(has_text="Why it matters")).to_contain_text(
         "devDependencies")

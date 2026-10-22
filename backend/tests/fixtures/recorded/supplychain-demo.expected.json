@@ -1,0 +1,14 @@
+[
+ {
+  "advisory": "GHSA-mfc2-93pr-jf92",
+  "package": "loadyaml@1.0.2",
+  "severity": "critical",
+  "fixed_versions": []
+ },
+ {
+  "advisory": "MAL-2025-25475",
+  "package": "loadyaml@1.0.2",
+  "severity": "critical",
+  "fixed_versions": []
+ }
+]

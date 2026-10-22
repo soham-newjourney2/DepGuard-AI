@@ -39,7 +39,7 @@ def test_p4_demo_qs_finding_path_and_drawer(page, base_url, console_errors):
     chain = drawer.locator(".pathchain").filter(has_text="express@4.17.1").first
     expect(chain).to_contain_text("qs@6.7.0")
     expect(drawer.locator(".signal").first).to_contain_text("+30")
-    expect(drawer.locator(".ev")).to_have_count(6)
+    expect(drawer.locator(".ev")).to_have_count(8)
     expect(drawer.locator(".fixline .ver:not(.ver--dim)")).to_have_text("6.7.3")
     page.keyboard.press("Escape")
     expect(drawer).to_be_hidden()

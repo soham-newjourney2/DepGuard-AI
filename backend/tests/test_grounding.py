@@ -89,7 +89,7 @@ def test_non_semver_numbers_not_flagged(text):
 
 
 def test_template_is_self_grounded():
-    out, level, stripped = grounding.validate(FALLBACK, CTX, FALLBACK)
+    _, level, stripped = grounding.validate(FALLBACK, CTX, FALLBACK)
     assert level == "full" and stripped == []
     assert "6.7.3" in FALLBACK["recommended_action"]
     assert FALLBACK["uncertainties"][0].startswith("Reachability not determined")

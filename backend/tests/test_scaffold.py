@@ -7,17 +7,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 REQUIRED_FILES = [
-    "README.md", "docs/SECURITY.md", "tasks.py", "pyproject.toml",
+    "README.md", "docs/walkthrough.md", "docs/structure.md", "tasks.py", "pyproject.toml",
     "requirements.txt", "requirements-dev.txt", ".env.example", ".gitignore",
-    ".gitattributes", ".github/workflows/ci.yml",
+    ".gitattributes",
 ]
 PACKAGES = ["app", "app/scanner", "app/ai", "app/remediation", "app/verify", "app/report",
-            "app/routes", "app/stacks", "app/web"]
+            "app/routes", "app/stacks"]
 ENV_KEYS = {
-    "SCANNER", "AI_PROVIDER", "ANTHROPIC_API_KEY", "AI_MODEL", "VERIFY_MODE", "MAX_UPLOAD_MB",
+    "SCANNER", "VERIFY_MODE", "MAX_UPLOAD_MB",
     "MAX_FILES", "MAX_UNZIPPED_MB", "MAX_RATIO", "JOB_TTL_MIN", "SCAN_TIMEOUT_S",
-    "VERIFY_TIMEOUT_S", "RATE_LIMIT", "LOCAL_ONLY", "WEB_TIMEOUT_S", "WEB_MAX_PAGE_KB",
-    "WEB_MAX_ASSET_KB", "WEB_MAX_ASSETS", "WEB_MAX_TOTAL_MB", "WEB_ALLOW_PRIVATE",
+    "VERIFY_TIMEOUT_S", "RATE_LIMIT", "LOCAL_ONLY", "EXPLOIT_SIGNALS",
 }
 
 
@@ -34,7 +33,7 @@ def test_backend_packages_importable():
 def test_pytest_markers_declared():
     cfg = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     markers = {m.split(":")[0] for m in cfg["tool"]["pytest"]["ini_options"]["markers"]}
-    assert {"e2e", "docker", "live"} <= markers
+    assert {"e2e", "live"} <= markers
 
 
 def test_env_example_has_all_config_keys():
@@ -45,7 +44,8 @@ def test_env_example_has_all_config_keys():
 
 def test_gitignore_covers_runtime_and_secrets():
     lines = (ROOT / ".gitignore").read_text(encoding="utf-8").split()
-    assert {"data/", ".env", ".venv/"} <= set(lines)
+    assert {"/data/", ".env", ".venv/"} <= set(lines)
+    assert "data/" not in lines, "an unanchored data/ would also hide backend/app/data"
 
 
 def test_tasks_exposes_commands():
@@ -54,5 +54,20 @@ def test_tasks_exposes_commands():
     spec = importlib.util.spec_from_file_location("tasks", ROOT / "tasks.py")
     tasks = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(tasks)
-    assert set(tasks.COMMANDS) == {"setup", "dev", "check", "e2e", "docker", "demo", "record",
-                                   "rehearse"}
+    assert set(tasks.COMMANDS) == {"setup", "dev", "check", "e2e", "demo", "record",
+                                   "rehearse", "answers", "doctor"}
+
+
+MANIFEST = re.compile(r"^(package(-lock)?\.json|npm-shrinkwrap\.json|yarn\.lock|pnpm-lock\.yaml|"
+                      r"pnpm-workspace\.yaml|.*requirements.*\.(txt|in)|Pipfile(\.lock)?|"
+                      r"pyproject\.toml|poetry\.lock|uv\.lock|go\.(mod|sum)|Cargo\.(toml|lock)|"
+                      r"composer\.(json|lock)|Gemfile(\.lock)?|packages\.lock\.json|.*\.csproj|"
+                      r"build\.gradle(\.kts)?|.*\.lockfile)$")
+
+
+def test_demo_and_fixture_manifests_are_stored_as_samples():
+    # GitHub would raise dependency and malware alerts for these on purpose-vulnerable demos
+    roots = [ROOT / "samples", ROOT / "backend" / "tests" / "fixtures"]
+    found = [p.relative_to(ROOT).as_posix() for r in roots for p in r.rglob("*")
+             if p.is_file() and MANIFEST.match(p.name) and "node_modules" not in p.parts]
+    assert found == []

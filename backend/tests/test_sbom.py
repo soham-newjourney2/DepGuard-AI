@@ -71,3 +71,12 @@ def test_purl_and_method():
     assert method({"source": "CVSS_V3", "vector": "CVSS:3.0/AV:N"}) == "CVSSv3"
     assert method({"source": "CVSS_V4", "vector": "CVSS:4.0/AV:N"}) == "CVSSv4"
     assert method({"source": "database_specific"}) == "other"
+
+
+def test_vulnerabilities_carry_exploit_properties(bom):
+    doc, _, _ = bom
+    v = next(v for v in doc["vulnerabilities"] if v["id"] == "GHSA-hrpp-h998-j3pp")
+    props = {p["name"]: p["value"] for p in v["properties"]}
+    assert props["depguard:exploit_status"] == "scored" and props["depguard:kev"] == "false"
+    assert 0 < float(props["depguard:epss"]) <= 1
+    assert 0.95 <= float(props["depguard:epss_percentile"]) <= 1

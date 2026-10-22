@@ -1,0 +1,34 @@
+__metadata:
+  version: 8
+  cacheKey: 10c0
+
+"app@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "app@workspace:."
+  languageName: unknown
+  linkType: soft
+
+"ok@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "ok@npm:1.0.0"
+  checksum: 10c0/aaaa
+  languageName: node
+  linkType: hard
+
+"nohash@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "nohash@npm:1.0.0"
+  languageName: node
+  linkType: hard
+
+"gitdep@https://github.com/someone/gitdep.git#commit=abc":
+  version: 1.0.0
+  resolution: "gitdep@https://github.com/someone/gitdep.git#commit=abc"
+  languageName: node
+  linkType: hard
+
+"shared@link:../shared::locator=app%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "shared@link:../shared::locator=app%40workspace%3A."
+  languageName: node
+  linkType: soft

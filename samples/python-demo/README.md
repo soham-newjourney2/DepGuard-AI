@@ -1,3 +1,3 @@
 # python-demo
 
-Deliberately outdated Flask service used by DepGuard's Python demo. Do not deploy.
+A deliberately outdated Flask app for DepGuard's Python demo. It's full of old, vulnerable versions on purpose, so never deploy it.

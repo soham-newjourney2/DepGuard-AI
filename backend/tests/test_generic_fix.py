@@ -1,6 +1,7 @@
 import shutil
 
 import pytest
+from helpers import real
 
 from app.config import ROOT
 from app.remediation import generic
@@ -8,7 +9,7 @@ from app.scanner.base import Package, build_result
 from app.scanner.normalize import normalize
 from app.stacks import BY_ID
 
-FIX = ROOT / "backend" / "tests" / "fixtures" / "stacks"
+FIX = real(ROOT / "backend" / "tests" / "fixtures" / "stacks")
 
 
 def adv(vid: str, name: str, fixed: str | None, eco: str = "PyPI", introduced: str = "0") -> dict:

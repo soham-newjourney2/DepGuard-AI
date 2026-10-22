@@ -14,8 +14,8 @@ def test_p0_landing_loads_without_console_errors(page, base_url, console_errors)
     page.goto(base_url + "/")
     expect(page.get_by_role("heading", level=1)).to_have_text(
         "Know which dependency actually puts you at risk.")
-    expect(page.locator('.pill[data-state="ok"]')).to_have_count(2)
-    expect(page.locator(".pill").filter(has_text="template")).to_be_visible()
+    expect(page.locator('.pill[data-state="ok"]')).to_have_count(3)
+    expect(page.locator(".pill").filter(has_text="evidence-based")).to_be_visible()
     page.wait_for_load_state("networkidle")
     assert console_errors == []
 

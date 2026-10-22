@@ -37,7 +37,6 @@ def code_of(name, dest, settings, **overrides):
     ("symlink.zip", "E_SYMLINK"),
     ("bomb.zip", "E_ZIP_BOMB"),
     ("no_manifest.zip", "E_NO_MANIFEST"),
-    ("nested_yarn.zip", "E_NO_LOCKFILE"),
     ("no_lockfile.zip", "E_NO_LOCKFILE"),
     ("lockfile_v1.zip", "E_LOCKFILE_VERSION"),
     ("bad_json.zip", "E_BAD_JSON"),
@@ -124,10 +123,9 @@ def test_bad_project_choice(dest, settings, project):
     assert exc.value.code in ("E_INVALID", "E_NO_MANIFEST")
 
 
-def test_yarn_hint(dest, settings):
-    with pytest.raises(AppError) as exc:
-        run("nested_yarn.zip", dest, settings)
-    assert "yarn.lock is not supported" in exc.value.hint
+def test_nested_yarn_project_is_detected(dest, settings):
+    intake = run("nested_yarn.zip", dest, settings)
+    assert intake.stack == "yarn" and intake.root == dest / "repo" / "web"
 
 
 def test_python_project_is_detected(dest, settings):
@@ -159,7 +157,7 @@ def test_mixed_stacks_offer_language_options(tmp_path):
     ({"pyproject.toml": "[project]"}, "E_NO_LOCKFILE", "pip freeze"),
     ({"pom.xml": "<project/>"}, "E_NO_LOCKFILE", "gradle"),
     ({"mix.exs": ""}, "E_UNSUPPORTED_ECOSYSTEM", "Python"),
-    ({"index.html": ""}, "E_NO_MANIFEST", "URL"),
+    ({"index.html": ""}, "E_NO_MANIFEST", "lockfile"),
 ])
 def test_unlocked_and_unsupported_explained(tmp_path, files, code, needle):
     build(tmp_path, files)

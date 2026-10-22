@@ -13,8 +13,7 @@ def settings(tmp_path) -> Settings:
     (web / "app.js").write_text("export {};", encoding="utf-8")
     return Settings(_env_file=None, data_dir=tmp_path / "data", frontend_dir=web,
                     samples_dir=tmp_path / "samples",
-                    scanner="fixture", ai_provider="auto", anthropic_api_key="",
-                    verify_mode="mock")
+                    scanner="fixture", verify_mode="mock")
 
 
 @pytest.fixture

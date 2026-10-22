@@ -1,0 +1,9 @@
+{
+ "id": "MAL-TEST-0001",
+ "summary": "SYNTHETIC test record (not a real advisory): malicious code in demo-lib",
+ "details": "Synthetic fixture for DepGuard tests only. It does not describe a real package.",
+ "published": "2099-01-01T00:00:00Z",
+ "modified": "2099-01-01T00:00:00Z",
+ "database_specific": {"synthetic": true},
+ "affected": [{"package": {"ecosystem": "npm", "name": "demo-lib"}, "versions": ["1.0.0"]}]
+}

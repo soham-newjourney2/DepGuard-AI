@@ -1,0 +1,13 @@
+module example.com/app
+
+go 1.21
+
+require (
+	github.com/good/lib v1.2.0
+	github.com/old/lib v1.0.0
+	github.com/local/lib v1.0.0
+)
+
+replace github.com/old/lib => github.com/fork/lib v1.0.1
+
+replace github.com/local/lib v1.0.0 => ../local-lib

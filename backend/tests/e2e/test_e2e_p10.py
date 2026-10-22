@@ -50,7 +50,7 @@ def test_p10_report_has_sbom_and_policy(page, base_url):
 
 def test_p10_github_form_validates_client_side(page, base_url):
     page.goto(base_url + "/")
-    form = page.get_by_role("form", name="Scan a GitHub repository or a live website")
+    form = page.get_by_role("form", name="Scan a GitHub repository")
     form.get_by_role("textbox").fill("not a repo")
     form.get_by_role("button", name="Scan").click()
     expect(page.locator(".toast")).to_contain_text("owner/repo")

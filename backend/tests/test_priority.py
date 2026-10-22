@@ -93,7 +93,53 @@ def test_fix_detection_uses_matching_range():
 def test_evidence_items():
     ev = mk(fix=False)["evidence"]
     assert [e["kind"] for e in ev] == ["advisory", "path", "scope", "fix", "reachability",
-                                       "scan"]
+                                       "scan", "weakness"]
+    assert ev[6]["text"] == "The advisory does not publish a weakness type (CWE)."
+    assert ev[6]["label"] == "Unknown"
     assert ev[3]["text"] == "No fixed version is published for the affected range."
     assert ev[4]["text"].startswith("Reachability not determined")
     assert ev[4]["label"] == "Unknown" and ev[0]["label"] == "Confirmed"
+
+
+def with_exploit(f, status, percentile=None, kev=None):
+    f["exploit"] = {"status": status, "kev": kev, "cves": ["CVE-2024-0001"], "as_of": "2026-10-22",
+                    "epss": None if percentile is None else {
+                        "cve": "CVE-2024-0001", "epss": 0.4, "percentile": percentile,
+                        "date": "2026-10-21"},
+                    "checked": {"kev": status != "unavailable", "epss": status != "unavailable"}}
+    f["evidence"] = evidence.build(f)
+    return f
+
+
+def test_kev_lifts_high_prod_from_p2_to_p1():
+    base = prioritize(mk(sev="high", scope="prod", fix=True, depth=2))
+    kev = {"cve": "CVE-2024-0001", "dateAdded": "2026-01-02", "knownRansomwareCampaignUse": "Known"}
+    listed = prioritize(with_exploit(mk(sev="high", scope="prod", fix=True, depth=2), "listed",
+                                     kev=kev))
+    assert (base["score"], base["band"]) == (65, "P2")
+    assert (listed["score"], listed["band"]) == (80, "P1")
+    sig = listed["signals"][-1]
+    assert sig == {"key": "exploitation", "label": "Exploitation", "value": "CISA KEV listed",
+                   "points": 15, "eid": "E7"}
+
+
+@pytest.mark.parametrize("pct,points,label", [(0.96, 8, "EPSS 96th pct"),
+                                              (0.95, 8, "EPSS 95th pct"),
+                                              (0.83, 4, "EPSS 83rd pct"),
+                                              (0.42, 0, "EPSS 42nd pct")])
+def test_epss_tiers(pct, points, label):
+    p = prioritize(with_exploit(mk(), "scored", percentile=pct))
+    assert (p["signals"][-1]["points"], p["signals"][-1]["value"]) == (points, label)
+    assert "exploit unknown" not in p["flags"]
+
+
+@pytest.mark.parametrize("status", ["unknown", "unavailable", "off"])
+def test_missing_exploit_data_scores_zero_but_is_flagged(status):
+    p = prioritize(with_exploit(mk(), status))
+    assert p["signals"][-1]["points"] == 0 and "exploit unknown" in p["flags"]
+
+
+def test_checked_and_absent_is_not_flagged():
+    p = prioritize(with_exploit(mk(), "none"))
+    assert p["signals"][-1]["value"] == "not in KEV, no EPSS"
+    assert "exploit unknown" not in p["flags"]

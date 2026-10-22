@@ -46,7 +46,7 @@ def test_event_hub_forgets_job_and_its_verifications():
 def test_delete_cancels_running_verification(settings, monkeypatch):
     shutil.copytree(ROOT / "samples" / "vuln-demo", settings.samples_dir / "vuln-demo")
 
-    async def slow(self, stage, workspace, timeout, on_line, tag):
+    async def slow(self, stage, workspace, timeout, on_line):
         await asyncio.sleep(30)
         return modes.StageResult(0)
 

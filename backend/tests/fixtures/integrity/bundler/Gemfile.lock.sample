@@ -1,0 +1,23 @@
+GIT
+  remote: https://github.com/someone/gitgem.git
+  revision: abc
+  specs:
+    gitgem (0.2.0)
+
+PATH
+  remote: vendor/localgem
+  specs:
+    localgem (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rack (2.2.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  gitgem!
+  localgem!
+  rack
