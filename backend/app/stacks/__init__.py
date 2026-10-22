@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from app.graph import Graph
-from app.stacks import dotnet, go, java, php, python, ruby, rust
+from app.stacks import dotnet, go, java, php, pnpm, python, ruby, rust, yarn
 from app.stacks.base import Builder
 
 
@@ -37,6 +37,10 @@ class Stack:
 STACKS = (
     Stack("npm", "npm", "Node.js", "package-lock.json", ("package.json",), None,
           "Run `npm install --package-lock-only` and include package-lock.json."),
+    Stack("yarn", "npm", "Node.js", "yarn.lock", ("package.json",), yarn.load_yarn,
+          "Run `yarn install` and include yarn.lock."),
+    Stack("pnpm", "npm", "Node.js", "pnpm-lock.yaml", ("package.json",), pnpm.load_pnpm,
+          "Run `pnpm install --lockfile-only` and include pnpm-lock.yaml."),
     Stack("uv", "PyPI", "Python", "uv.lock", ("pyproject.toml",), python.load_uv,
           "Run `uv lock`."),
     Stack("poetry", "PyPI", "Python", "poetry.lock", ("pyproject.toml",), python.load_poetry,
@@ -63,9 +67,7 @@ STACKS = (
           "Enable Gradle dependency locking (`./gradlew dependencies --write-locks`) and "
           "include gradle.lockfile; plain pom.xml versions are not resolved."),
 )
-SITE = Stack("site", "npm", "Website", "index.html", (), None,
-             "Scan the page that loads the libraries.")
-BY_ID = {s.id: s for s in (*STACKS, SITE)}
+BY_ID = {s.id: s for s in STACKS}
 LANGUAGES = list(dict.fromkeys(s.language for s in STACKS))
 
 

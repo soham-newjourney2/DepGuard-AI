@@ -96,26 +96,27 @@ async def download(owner: str, repo: str, ref: str, dest: Path, limit: int, base
     url = f"{base_url.rstrip('/')}/{owner}/{repo}/zip/{quote(ref, safe='/')}"
     mb = limit // (1024 * 1024)
     try:
-        async with httpx.AsyncClient(timeout=timeout_s, transport=transport, follow_redirects=False,
-                                     headers={"User-Agent": "DepGuard-AI"}) as client:
-            async with client.stream("GET", url) as resp:
-                if resp.status_code == 404:
-                    raise AppError("E_GITHUB_NOT_FOUND", f"{owner}/{repo}@{ref} was not found.",
-                                   "Only public repositories are supported; check the ref.", 404)
-                if resp.status_code != 200:
-                    raise AppError("E_GITHUB_UNAVAILABLE",
-                                   f"GitHub returned HTTP {resp.status_code}.",
-                                   "Try again in a minute.", 502)
-                length = resp.headers.get("content-length", "")
-                if length.isdigit() and int(length) > limit:
-                    raise too_large(mb)
-                written = 0
-                with open(dest, "wb") as out:
-                    async for chunk in resp.aiter_bytes(CHUNK):
-                        written += len(chunk)
-                        if written > limit:
-                            raise too_large(mb)
-                        out.write(chunk)
+        async with (httpx.AsyncClient(timeout=timeout_s, transport=transport,
+                                      follow_redirects=False,
+                                      headers={"User-Agent": "DepGuard-AI"}) as client,
+                    client.stream("GET", url) as resp):
+            if resp.status_code == 404:
+                raise AppError("E_GITHUB_NOT_FOUND", f"{owner}/{repo}@{ref} was not found.",
+                               "Only public repositories are supported; check the ref.", 404)
+            if resp.status_code != 200:
+                raise AppError("E_GITHUB_UNAVAILABLE",
+                               f"GitHub returned HTTP {resp.status_code}.",
+                               "Try again in a minute.", 502)
+            length = resp.headers.get("content-length", "")
+            if length.isdigit() and int(length) > limit:
+                raise too_large(mb)
+            written = 0
+            with open(dest, "wb") as out:
+                async for chunk in resp.aiter_bytes(CHUNK):
+                    written += len(chunk)
+                    if written > limit:
+                        raise too_large(mb)
+                    out.write(chunk)
     except (httpx.TimeoutException, httpx.TransportError):
         raise AppError("E_GITHUB_UNAVAILABLE", "Could not reach GitHub.",
                        "Check your connection and try again.", 502) from None

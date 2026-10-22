@@ -3,22 +3,25 @@ import json
 import logging
 import time
 from collections.abc import Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
+from app import flatedges
 from app import policy as policy_mod
+from app import risks as risks_mod
 from app.config import Settings
 from app.errors import AppError
+from app.exploit import Signals, classify, cves_of, make_feeds
 from app.graph import Graph
 from app.intake import Intake, extract_project
 from app.jobs import IllegalTransition, JobStore
 from app.lockfile import parse as parse_lock
 from app.prioritize import enrich
 from app.reachability import LABELS, annotate
-from app.scanner import Package, ScanError, ScanResult, make_scanner, recorded_scanner
+from app.samples import packages as sample_packages
+from app.scanner import ScanError, ScanResult, make_scanner
 from app.scanner.normalize import SEV_ORDER, normalize
 from app.stacks import BY_ID
-from app.web import site as web
 
 log = logging.getLogger("depguard.pipeline")
 PENDING = "pending.zip"
@@ -31,11 +34,9 @@ class Context:
     settings: Settings
     store: JobStore
     project: str | None = None
-    url: str | None = None
     intake: Intake | None = None
     graph: Graph | None = None
     scan: ScanResult | None = None
-    data: dict = field(default_factory=dict)
 
     @property
     def dir(self) -> Path:
@@ -79,59 +80,19 @@ def add_warning(ctx: Context, code: str, message: str) -> None:
         ctx.store.update(ctx.job_id, warning={"code": code, "message": message})
 
 
-async def fetching(ctx: Context) -> None:
-    s = ctx.settings
-    ctx.log(f"Fetching {ctx.url} (HTML and scripts are read as text; nothing is executed)")
-    site = ctx.data["site"] = await asyncio.wait_for(web.scan_site(ctx.url, s),
-                                                     s.web_timeout_s * 6)
-    root = ctx.dir / "site"
-    root.mkdir(exist_ok=True)
-    await asyncio.to_thread((root / "index.html").write_text, site.html, "utf-8")
-    await asyncio.to_thread(write_json, ctx.dir / "site.json", site.to_json())
-    await asyncio.to_thread(write_json, ctx.dir / "meta.json",
-                            {"root": "site", "stack": "site", "url": site.final_url})
-    ctx.intake = Intake(root, {}, {}, 0, 1 + site.fetched, [], "site")
-    ctx.store.update(ctx.job_id, summary={
-        "files": 1 + site.fetched, "stack": "site", "ecosystem": "npm", "language": "Website",
-        "site": {"url": site.final_url, "title": site.title, "scripts": site.scripts,
-                 "fetched": site.fetched}})
-    for r in site.redirects:
-        ctx.log(f"Redirected to {r}")
-    for note in site.notes[:10]:
-        ctx.log(note, "warn")
-    if site.truncated:
-        add_warning(ctx, "W_PAGE_TRUNCATED", "The page was larger than the download cap; only "
-                                             "its first part was analysed.")
-    ctx.log(f"Read the page and {site.fetched} of {site.scripts} scripts "
-            f"({'title: ' + site.title if site.title else 'no title'})")
-
-
-async def detecting(ctx: Context) -> None:
-    site: web.SiteScan = ctx.data["site"]
-    g = ctx.graph = web.build_graph(site)
-    await asyncio.to_thread(write_json, ctx.dir / "graph.json", g.to_json())
-    stats = g.stats()
-    ctx.store.update(ctx.job_id, summary=stats)
-    other = [d for d in site.detections if d.ecosystem is None]
-    if other:
-        names = ", ".join(f"{d.name} {d.version}" for d in other[:3])
-        add_warning(ctx, "W_NOT_SCANNABLE", f"Detected {names}; there is no advisory feed for "
-                                            "it in OSV, so it was not checked.")
-    if not stats["packages"]:
-        add_warning(ctx, "W_NO_LIBRARIES", "No versioned client-side library was recognised. "
-                                           "Bundled apps usually strip version banners.")
-    for d in site.detections:
-        if d.ecosystem == "npm":
-            ctx.log(f"Detected {d.name}@{d.version} ({d.confidence}, "
-                    f"{d.evidence[0]['kind']})")
-
-
 async def parsing(ctx: Context) -> None:
     if ctx.intake.stack == "npm":
         lock = parse_lock(ctx.intake.lockfile, ctx.intake.manifest)
         g = ctx.graph = await asyncio.to_thread(Graph, lock)
     else:
         g = ctx.graph = await asyncio.to_thread(BY_ID[ctx.intake.stack].load, ctx.intake.root)
+        provider = flatedges.make_provider(ctx.settings)
+        if provider is not None:
+            inferred, note = await flatedges.infer(g, ctx.intake.stack, provider)
+            if inferred is not None:
+                g = ctx.graph = inferred
+            if note:
+                ctx.log(note, "info" if inferred is not None else "warn")
         lock = g.lock
     await asyncio.to_thread(write_json, ctx.dir / "graph.json", g.to_json())
     stats = g.stats()
@@ -152,30 +113,26 @@ async def parsing(ctx: Context) -> None:
             f"max depth {stats['max_depth']}")
 
 
-def scan_packages(graph: Graph) -> list[Package]:
-    return sorted({Package(graph.nodes[keys[0]].name, graph.nodes[keys[0]].version,
-                            graph.nodes[keys[0]].ecosystem)
-                   for keys in graph.packages().values()})
+def osv_unavailable(reason: str) -> AppError:
+    if reason.startswith("OSV unavailable (") and reason.endswith(")"):
+        reason = reason[len("OSV unavailable ("):-1]
+    return AppError("E_SCAN_UNAVAILABLE", f"Could not connect to OSV ({reason}).",
+                    "Check your internet connection and retry.", 503)
 
 
 async def scanning(ctx: Context) -> None:
     s = ctx.settings
-    packages = scan_packages(ctx.graph)
+    packages = sample_packages(ctx.graph)
     scanner = make_scanner(s)
-    if ctx.intake.stack == "site" and scanner.name == "osv-cli":
-        scanner = make_scanner(s.model_copy(update={"scanner": "osv-api"}))
     ctx.log(f"Querying {scanner.name} for {len(packages)} packages")
     lockfile = ctx.intake.root / BY_ID[ctx.intake.stack].lockfile
     try:
         result = await asyncio.wait_for(scanner.scan(packages, lockfile), s.scan_timeout_s)
     except (ScanError, TimeoutError) as exc:
-        reason = str(exc) or "timed out"
-        if ctx.store.get(ctx.job_id)["source"] != "demo":
-            raise AppError("E_SCAN_UNAVAILABLE", f"Vulnerability scan failed: {reason}",
-                           "OSV may be unreachable; retry in a minute.", 503) from None
-        ctx.log(f"Live scan failed ({reason}); using the recorded scan for this bundled sample",
-                "warn")
-        result = await recorded_scanner(s).scan(packages, lockfile)
+        raise osv_unavailable(str(exc) or "timed out") from None
+    if result.source == "cache" and ctx.store.get(ctx.job_id)["source"] == "demo":
+        raise osv_unavailable(result.notes[0].removeprefix("Live scan failed: ")
+                              if result.notes else "live scan failed")
     for note in result.notes:
         ctx.log(note, "warn")
     if result.source == "cache":
@@ -191,29 +148,69 @@ async def scanning(ctx: Context) -> None:
     ctx.log(f"{hits} of {len(packages)} packages have known advisories ({result.source})")
 
 
+async def exploit_signals(ctx: Context, findings: list[dict]) -> None:
+    """KEV + EPSS per finding; the feeds can degrade the labels but never fail the scan."""
+    if not findings:
+        return
+    cves = sorted({c for f in findings for c in cves_of(f["advisory"])})
+    try:
+        sig = await asyncio.wait_for(make_feeds(ctx.settings).lookup(cves), 60)
+    except Exception as exc:
+        log.warning("exploit feeds failed: %s", exc.__class__.__name__)
+        sig = Signals(None, None, {"kev": "unavailable", "epss": "unavailable"},
+                      [f"exploit feeds failed ({exc.__class__.__name__})"])
+    for f in findings:
+        f["exploit"] = classify(cves_of(f["advisory"]), sig)
+    for note in sig.notes:
+        ctx.log(note, "warn")
+    if sig.off:
+        ctx.log("Exploit signals are off (CISA KEV / EPSS not checked)")
+        return
+    if sig.degraded:
+        add_warning(ctx, "W_EXPLOIT_UNAVAILABLE",
+                    "CISA KEV or EPSS could not be reached; exploitation status is shown as "
+                    "unavailable where it could not be checked.")
+    status = [f["exploit"]["status"] for f in findings]
+    high = sum(1 for f in findings if (f["exploit"]["epss"] or {}).get("percentile", 0) >= 0.8)
+    ctx.log(f"Exploit signals: {status.count('listed')} in CISA KEV · {high} EPSS ≥80th "
+            f"percentile · {status.count('unknown')} without a CVE")
+
+
+async def supply_chain(ctx: Context, findings: list[dict]) -> list[dict]:
+    inputs = risks_mod.Inputs(ctx.intake.root, ctx.intake.stack, ctx.graph, findings,
+                              ctx.store.get(ctx.job_id)["source"])
+    items, failed = await asyncio.to_thread(risks_mod.collect, inputs)
+    await asyncio.to_thread(write_json, ctx.dir / "risks.json", items)
+    counts = risks_mod.counts(items)
+    ctx.store.update(ctx.job_id, summary={"risk_counts": counts})
+    for name in failed:
+        add_warning(ctx, "W_RISK_CHECK_FAILED", f"The {name} supply-chain check failed and was "
+                                                "skipped; its risks are not shown.")
+    ctx.log("Supply-chain checks: " + (", ".join(f"{n} {k}" for k, n in counts["by_kind"].items()
+                                                 if n) or "no risk signals"))
+    return items
+
+
 async def analyzing(ctx: Context) -> None:
     findings = await asyncio.to_thread(normalize, ctx.scan, ctx.graph)
-    if ctx.intake.stack == "site":
-        web.annotate_site(findings, ctx.data["site"])
-        findings = enrich(findings)
-        ctx.log(f"{len(findings)} findings come from libraries the page loads")
-    else:
-        idx = await asyncio.to_thread(annotate, findings, ctx.intake.root,
-                                      BY_ID[ctx.intake.stack].ecosystem)
-        findings = enrich(findings)
-        labels = [f["reachability"]["label"] for f in findings]
-        ctx.log(f"Import scan: {idx.files} source files; " + ", ".join(
-            f"{labels.count(lab)} {lab.lower()}" for lab in LABELS if labels.count(lab)))
+    idx = await asyncio.to_thread(annotate, findings, ctx.intake.root,
+                                  BY_ID[ctx.intake.stack].ecosystem)
+    await exploit_signals(ctx, findings)
+    findings = enrich(findings)
+    labels = [f["reachability"]["label"] for f in findings]
+    ctx.log(f"Import scan: {idx.files} source files; " + ", ".join(
+        f"{labels.count(lab)} {lab.lower()}" for lab in LABELS if labels.count(lab)))
     await asyncio.to_thread(write_json, ctx.dir / "findings.json", findings)
-    by_sev = {k: 0 for k in sorted(SEV_ORDER, key=SEV_ORDER.get, reverse=True)}
-    by_band = {b: 0 for b in ("P1", "P2", "P3", "P4")}
+    risks = await supply_chain(ctx, findings)
+    by_sev = dict.fromkeys(sorted(SEV_ORDER, key=SEV_ORDER.get, reverse=True), 0)
+    by_band = dict.fromkeys(("P1", "P2", "P3", "P4"), 0)
     for f in findings:
         by_sev[f["advisory"]["severity"]["label"]] += 1
         by_band[f["priority"]["band"]] += 1
     policy, source, warning = policy_mod.load(ctx.intake.root)
     if warning:
         add_warning(ctx, "W_POLICY", warning)
-    verdict = policy_mod.evaluate(findings, policy, source)
+    verdict = policy_mod.evaluate(findings, policy, source, risks)
     await asyncio.to_thread(write_json, ctx.dir / "policy.json",
                             {"policy": policy, "source": source})
     ctx.store.update(ctx.job_id, summary={
@@ -233,18 +230,11 @@ STEPS: list[tuple[str, Step]] = [
     ("scanning", scanning),
     ("analyzing", analyzing),
 ]
-SITE_STEPS: list[tuple[str, Step]] = [
-    ("extracting", fetching),
-    ("parsing", detecting),
-    ("scanning", scanning),
-    ("analyzing", analyzing),
-]
-
 
 async def run(ctx: Context, steps: list[tuple[str, Step]] | None = None) -> None:
     store, job_id = ctx.store, ctx.job_id
     try:
-        for name, step in steps or (SITE_STEPS if ctx.url else STEPS):
+        for name, step in steps or STEPS:
             store.transition(job_id, name)
             started = time.perf_counter()
             await step(ctx)

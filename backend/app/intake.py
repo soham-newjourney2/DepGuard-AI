@@ -123,7 +123,7 @@ def extract(zf: zipfile.ZipFile, entries: list, dest: Path, s: Settings) -> int:
 
 MAX_PROJECT_DEPTH = 4
 PROJECT_SPEC = re.compile(r"^[A-Za-z0-9._@ -]+(?:/[A-Za-z0-9._@ -]+)*$")
-OTHER_LOCKS = ("yarn.lock", "pnpm-lock.yaml", "bun.lockb")
+OTHER_LOCKS = ("bun.lockb",)
 DISCOVERY_SKIP = SKIP_DIRS | {"vendor", ".venv", "venv", "site-packages", "target", "__pycache__",
                               "bower_components", ".tox", "dist", "build", "obj", "bin", ".next"}
 UNSUPPORTED = (("Elixir", "mix.exs"), ("Dart/Flutter", "pubspec.yaml"), ("Swift", "Package.swift"),
@@ -210,7 +210,7 @@ def multi_note(found: list[tuple[Path, Stack]], picked: str, dest: Path) -> dict
     options = [option(d, s, dest) for d, s in found][:12]
     return {"code": "W_MULTIPLE_PROJECTS",
             "message": f"This archive contains {len(found)} projects; analysed "
-                       f"{picked.split('#')[0]}/. Switch to another below.",
+                       f"{picked.split('#', maxsplit=1)[0]}/. Switch to another below.",
             "options": options, "chosen": picked}
 
 
@@ -248,8 +248,7 @@ def locate_root(dest: Path, project: str | None = None) -> tuple[Path, Stack, di
                    "Supported: " + ", ".join(LANGUAGES) + ".", 422)
     raise fail("E_NO_MANIFEST", "No supported project found in the archive.",
                "Zip the folder that contains your lockfile (package-lock.json, poetry.lock, "
-               "requirements.txt, go.mod, Cargo.lock, composer.lock, Gemfile.lock…). "
-               "For a live website, paste its URL instead.")
+               "requirements.txt, go.mod, Cargo.lock, composer.lock, Gemfile.lock…).")
 
 
 def read_json(path: Path) -> dict:

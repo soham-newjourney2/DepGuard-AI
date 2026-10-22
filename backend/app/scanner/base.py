@@ -25,7 +25,7 @@ class Package:
 
 @dataclass
 class ScanResult:
-    """raw = {"results": [{"package": {name, version, ecosystem}, "vulns": [OSV record, ...]}]}"""
+    """Scan output; raw holds the OSV records found for each package."""
 
     raw: dict
     scanner: dict

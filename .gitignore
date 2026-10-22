@@ -4,7 +4,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .env
-data/
+/data/
 test-results/
 playwright-report/
 node_modules/
@@ -12,3 +12,6 @@ node_modules/
 .DS_Store
 Thumbs.db
 !backend/tests/fixtures/reach_app/node_modules/
+
+# personal notes, not for the repo
+DepGuard-AI.docx

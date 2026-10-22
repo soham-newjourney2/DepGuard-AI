@@ -36,9 +36,12 @@ async def approve(job_id: str, pid: str, body: Approval, request: Request) -> di
     if not body.confirm:
         raise AppError("E_CONFIRM_REQUIRED", "Approval needs explicit confirmation.",
                        "Send {\"confirm\": true} after reviewing what will run.", 422)
+    if proposal["strategy"] == "remove":
+        raise AppError("E_NO_PATCH", "Removing a malicious package is a manual step.",
+                       "Follow the removal steps shown, then rotate secrets.", 409)
     if proposal.get("verifiable") is False and proposal["strategy"] != "none":
         raise AppError("E_VERIFY_UNSUPPORTED",
-                       "Isolated verification runs npm projects only.",
+                       "Verification runs on the bundled npm demos only.",
                        "Apply the command or patch shown and run your own test suite.", 409)
     if proposal["strategy"] == "none" or not proposal.get("edits"):
         raise AppError("E_NO_PATCH", "This proposal has nothing to apply.", "", 409)

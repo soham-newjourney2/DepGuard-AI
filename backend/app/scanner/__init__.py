@@ -5,7 +5,7 @@ from app.scanner.fixture import RecordedScanner
 from app.scanner.osv_api import OsvApiScanner
 from app.scanner.osv_cli import OsvCliScanner
 
-__all__ = ["Package", "ScanError", "ScanResult", "make_scanner", "recorded_scanner"]
+__all__ = ["Package", "ScanError", "ScanResult", "make_scanner"]
 
 
 def make_scanner(s: Settings):
@@ -16,6 +16,3 @@ def make_scanner(s: Settings):
     cache = DiskCache(s.data_dir / "cache" / "osv", s.cache_ttl_h * 3600)
     return OsvApiScanner(s.osv_api_url, cache, timeout_s=min(15, s.scan_timeout_s))
 
-
-def recorded_scanner(s: Settings) -> RecordedScanner:
-    return RecordedScanner(s.recorded_dir, source="cache")

@@ -16,7 +16,6 @@ class Node:
     peer: bool = False
     link: bool = False
     resolved: str = ""
-    integrity: str = ""
     deps: dict[str, tuple[str, str]] = field(default_factory=dict)
     ecosystem: str = "npm"
     installed: bool = True
@@ -56,7 +55,6 @@ def make_node(key: str, entry: dict, root: bool = False) -> Node:
         peer=bool(entry.get("peer")),
         link=bool(entry.get("link")),
         resolved=str(entry.get("resolved") or ""),
-        integrity=str(entry.get("integrity") or ""),
         installed=key != "" and is_installed(key),
     )
     fields = DEP_FIELDS + ((("devDependencies", "dev"),) if root else ())

@@ -1,7 +1,7 @@
 [project]
 name = "depguard-ai"
 version = "0.1.0"
-description = "Explain, fix and verify npm dependency vulnerabilities."
+description = "Explain, prioritise and fix dependency vulnerabilities across eight ecosystems."
 requires-python = ">=3.11"
 
 [tool.ruff]
@@ -10,18 +10,17 @@ target-version = "py311"
 extend-exclude = ["frontend", "data", "samples"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF059", "PLW2901", "PLW1510", "PLC0207"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["app"]
+known-first-party = ["app", "tools"]
 
 [tool.pytest.ini_options]
 testpaths = ["backend/tests"]
-pythonpath = ["backend"]
+pythonpath = ["backend", "."]
 asyncio_mode = "auto"
 addopts = "-p no:cacheprovider"
 markers = [
     "e2e: browser end-to-end tests (playwright)",
-    "docker: requires Docker daemon and worker image",
-    "live: hits real network services (OSV, npm, Anthropic)",
+    "live: hits real network services (OSV, npm, KEV/EPSS)",
 ]

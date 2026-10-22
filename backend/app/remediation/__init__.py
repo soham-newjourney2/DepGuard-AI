@@ -15,18 +15,13 @@ from app.scanner.fixture import RecordedScanner
 
 def make_registry(s: Settings) -> Registry:
     return Registry(s.registry_url, DiskCache(s.data_dir / "cache" / "npm", s.cache_ttl_h * 3600),
-                    recorded=s.recorded_dir.parent / "npm",
+                    recorded=s.recorded_dir.parent / "npm" if s.scanner == "fixture" else None,
                     offline=s.scanner == "fixture" or s.local_only)
 
 
-def make_checker(s: Settings, demo: bool = False):
-    """OSV re-check; after one failure it stops calling out (bundled demos use the recording)."""
+def make_checker(s: Settings):
+    """OSV re-check; after one failure it stops calling out and reports "unknown"."""
     state = {"down": False}
-    recorded = RecordedScanner(s.recorded_dir) if demo else None
-
-    def from_recording(packages: list[Package], result) -> dict[str, list[str] | None]:
-        return {p.label: ([v["id"] for v in result.vulns_for(p)] if recorded.known(p) else None)
-                for p in packages}
 
     async def check(packages: list[Package]) -> dict[str, list[str] | None]:
         scanner = make_scanner(s)
@@ -42,11 +37,6 @@ def make_checker(s: Settings, demo: bool = False):
                 if result.source == "cache":
                     state["down"] = True
                 return {p.label: [v["id"] for v in result.vulns_for(p)] for p in packages}
-        if recorded is not None:
-            try:
-                return from_recording(packages, await recorded.scan(packages))
-            except ScanError:
-                pass
         return {p.label: None for p in packages}
     return check
 
@@ -70,20 +60,34 @@ def project_root(job_dir: Path) -> Path:
     return root
 
 
+NOT_VERIFIABLE = ("Verification runs on the bundled npm demos only; apply this change and run "
+                  "your own tests.")
+
+
+def mark_unverifiable(p: dict) -> None:
+    if p.get("verifiable") is not False and p["strategy"] not in ("none", "remove"):
+        p["verifiable"] = False
+        if NOT_VERIFIABLE not in p["warnings"]:
+            p["warnings"].append(NOT_VERIFIABLE)
+
+
 async def propose(job_dir: Path, finding: dict, findings: list[dict], s: Settings,
                   registry: Registry | None = None, checker=None,
-                  demo: bool = False) -> list[dict]:
+                  verifiable: bool = True) -> list[dict]:
     root = project_root(job_dir)
     stack = project_stack(job_dir)
     if stack != "npm":
         proposals = await generic.plan(finding, findings, root, stack,
-                                       checker or make_checker(s, demo))
+                                       checker or make_checker(s))
     else:
         graph = json.loads((job_dir / "graph.json").read_text("utf-8"))
         text = (root / "package.json").read_text("utf-8")
         planner = Planner(finding, findings, graph, text, registry or make_registry(s),
-                          checker or make_checker(s, demo))
+                          checker or make_checker(s))
         proposals = await planner.plan()
+    if not verifiable:
+        for p in proposals:
+            mark_unverifiable(p)
     folder = job_dir / "proposals"
     folder.mkdir(exist_ok=True)
     now = iso(utcnow())
@@ -108,19 +112,21 @@ def load_proposal(job_dir: Path, pid: str) -> dict:
 
 
 async def propose_batch(job_dir: Path, findings: list[dict], s: Settings, registry=None,
-                        checker=None, demo: bool = False) -> dict:
+                        checker=None, verifiable: bool = True) -> dict:
     root = project_root(job_dir)
     stack = project_stack(job_dir)
     if stack != "npm":
-        plan = await generic.plan_batch(findings, root, stack, checker or make_checker(s, demo))
+        plan = await generic.plan_batch(findings, root, stack, checker or make_checker(s))
     else:
         graph = json.loads((job_dir / "graph.json").read_text("utf-8"))
         text = (root / "package.json").read_text("utf-8")
         plan = await plan_all(findings, graph, text, registry or make_registry(s),
-                              checker or make_checker(s, demo))
+                              checker or make_checker(s))
     if not plan["edits"] and not plan.get("changes"):
         raise AppError("E_NO_PATCH", "No finding has an applicable fix.",
                        "Every finding lacks a safe upgrade.", 409)
+    if not verifiable:
+        mark_unverifiable(plan)
     folder = job_dir / "proposals"
     folder.mkdir(exist_ok=True)
     path = folder / f"{plan['pid']}.json"

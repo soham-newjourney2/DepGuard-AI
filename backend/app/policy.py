@@ -2,7 +2,8 @@ import json
 from pathlib import Path
 
 FILE = "depguard.policy.json"
-DEFAULT = {"fail_on": "critical", "prod_only": False, "require_fix": False}
+DEFAULT = {"fail_on": "critical", "prod_only": False, "require_fix": False,
+           "fail_on_risks": "none"}
 THRESHOLD = {"low": 1, "medium": 2, "high": 3, "critical": 4, "none": 99}
 SEVERITY = {"low": 1, "medium": 2, "high": 3, "critical": 4}
 
@@ -25,6 +26,11 @@ def load(root: Path) -> tuple[dict, str, str | None]:
             policy["fail_on"] = data["fail_on"]
         else:
             problems.append("fail_on")
+    if "fail_on_risks" in data:
+        if data["fail_on_risks"] in THRESHOLD:
+            policy["fail_on_risks"] = data["fail_on_risks"]
+        else:
+            problems.append("fail_on_risks")
     for key in ("prod_only", "require_fix"):
         if key in data:
             if isinstance(data[key], bool):
@@ -36,9 +42,11 @@ def load(root: Path) -> tuple[dict, str, str | None]:
     return policy, FILE, warning
 
 
-def evaluate(findings: list[dict], policy: dict, source: str) -> dict:
+def evaluate(findings: list[dict], policy: dict, source: str,
+             risks: list[dict] | None = None) -> dict:
     """Unknown severity always counts: missing data is never treated as safe."""
     limit = THRESHOLD[policy["fail_on"]]
+    risk_limit = THRESHOLD[policy.get("fail_on_risks", "none")]
     violations = []
     for f in findings:
         if policy["prod_only"] and f["scope"] != "prod":
@@ -53,6 +61,10 @@ def evaluate(findings: list[dict], policy: dict, source: str) -> dict:
             violations.append({"finding_id": f["id"], "advisory": f["advisory"]["id"],
                                "package": f"{f['package']['name']}@{f['package']['version']}",
                                "severity": sev, "scope": f["scope"]})
+    for r in risks or []:
+        if SEVERITY.get(r["severity"], 0) >= risk_limit:
+            violations.append({"risk_id": r["id"], "kind": r["kind"], "title": r["title"],
+                               "severity": r["severity"]})
     return {"status": "fail" if violations else "pass", "policy": policy, "source": source,
             "violations": violations, "count": len(violations)}
 
@@ -64,4 +76,6 @@ def describe(policy: dict) -> str:
         parts.append("production scope only")
     if policy["require_fix"]:
         parts.append("only when a fix exists")
+    if policy.get("fail_on_risks", "none") != "none":
+        parts.append(f"supply-chain signals at {policy['fail_on_risks']} or worse")
     return ", ".join(parts)

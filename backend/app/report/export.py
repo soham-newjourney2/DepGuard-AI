@@ -4,7 +4,8 @@ import json
 from app import policy as policy_mod
 from app.jobs import iso, utcnow
 from app.report.compare import CLASSES, classify
-from app.verify.modes import IMAGE, NPM_FLAGS
+from app.risks import counts as risk_counts
+from app.verify.modes import NPM_FLAGS
 
 TITLES = {"resolved": "Resolved", "still_present": "Still present",
           "newly_detected": "Newly detected", "unable_to_verify": "Unable to verify"}
@@ -14,23 +15,22 @@ SEALS = {
     "failed": ("failed", "Verification failed"),
     "none": ("none", "Scan only"),
 }
+RISK_NOTE = ("Static signals, not verdicts. Only OSV MAL- records are called malicious; "
+             "secret values are never stored or shown.")
 LIMITS = [
     "Reachability not determined — static import analysis can miss dynamic usage.",
     "Findings are matched by advisory range against lockfile versions: presence, not proof of "
     "exploitability.",
     "OSV coverage is not complete; no findings is not proof the project is secure.",
+    "Exploit signals: a CISA KEV listing is observed exploitation; EPSS is a model's estimate. "
+    "Absence from KEV is not proof a vulnerability is not exploited.",
 ]
 
 
-def commands(mode: str | None) -> list[str]:
+def commands() -> list[str]:
     flags = " ".join(NPM_FLAGS)
-    base = [f"npm install --package-lock-only {flags}", f"npm ci {flags}",
+    return [f"npm install --package-lock-only {flags}", f"npm ci {flags}",
             "npm test --if-present"]
-    if mode == "docker":
-        return [f"docker run (image {IMAGE}, read-only, cap-drop ALL, non-root, "
-                f"no-new-privileges, pids 256, 1 GB, 1 CPU) → {c}" for c in base[:2]] + [
-            f"docker run --network none (same hardening) → {base[2]}"]
-    return base
 
 
 def seal(verification: dict | None) -> tuple[str, str]:
@@ -47,7 +47,8 @@ def seal(verification: dict | None) -> tuple[str, str]:
 
 
 def build(job: dict, findings: list[dict], proposal: dict | None, verification: dict | None,
-          after: list[dict] | None, ai: dict, policy: dict | None = None) -> dict:
+          after: list[dict] | None, ai: dict, policy: dict | None = None,
+          risks: list[dict] | None = None) -> dict:
     status = verification.get("status") if verification else None
     targeted = set((proposal or {}).get("resolves") or [])
     classes = classify(findings, after if status in ("verified", "verify_failed") else None,
@@ -59,12 +60,14 @@ def build(job: dict, findings: list[dict], proposal: dict | None, verification: 
     limitations += (verification or {}).get("labels") or []
     if scan_before.get("source") == "cache":
         limitations.append(f"Cached scan from {scan_before.get('ts')} — live scanner unavailable.")
-    if ai.get("provider") == "template":
-        limitations.append("Explanations used the deterministic template (no AI provider).")
+    if ai.get("provider") == "evidence-based":
+        limitations.append("Explanations are evidence-based: decision-tree templates, a CWE "
+                           "knowledge base and verbatim advisory quotes. No language model is "
+                           "used.")
     return {
         "report_version": 1,
         "generated_at": iso(utcnow()),
-        "project": {"job_id": job["id"], "filename": job["filename"],
+        "project": {"job_id": job["id"], "filename": job["filename"], "source": job.get("source"),
                     "packages": job["summary"].get("packages"),
                     "lockfile_version": job["summary"].get("lockfile_version")},
         "seal": {"kind": kind, "label": label, "mode": (verification or {}).get("mode")},
@@ -75,7 +78,8 @@ def build(job: dict, findings: list[dict], proposal: dict | None, verification: 
                    **{c: len(classes[c]) for c in CLASSES}},
         "classes": classes,
         "policy": policy_block(findings, after if status in ("verified", "verify_failed")
-                               else None, policy),
+                               else None, policy, risks),
+        "risks": None if risks is None else {"counts": risk_counts(risks), "items": risks},
         "tests": {"present": tests.get("present"), "exit_code": tests.get("exit_code"),
                   "status": next((s["status"] for s in (verification or {}).get("stages", [])
                                   if s["name"] == "test"), None)},
@@ -92,7 +96,7 @@ def build(job: dict, findings: list[dict], proposal: dict | None, verification: 
         "audit": {
             "scan_before": scan_before,
             "scan_after": (verification or {}).get("scan"),
-            "commands": commands((verification or {}).get("mode")) if verification else [],
+            "commands": commands() if verification else [],
             "stages": [{k: s.get(k) for k in ("name", "status", "exit_code", "duration_ms",
                                                "started", "finished")}
                        for s in (verification or {}).get("stages", [])],
@@ -102,16 +106,24 @@ def build(job: dict, findings: list[dict], proposal: dict | None, verification: 
     }
 
 
-def policy_block(before: list[dict], after: list[dict] | None, policy: dict | None):
+def policy_block(before: list[dict], after: list[dict] | None, policy: dict | None,
+                 risks: list[dict] | None = None):
     if not policy:
         return None
     p, src = policy["policy"], policy["source"]
-    b = policy_mod.evaluate(before, p, src)
-    a = policy_mod.evaluate(after, p, src) if after is not None else None
+    b = policy_mod.evaluate(before, p, src, risks)
+    a = policy_mod.evaluate(after, p, src, risks) if after is not None else None
     return {"policy": p, "source": src, "describe": policy_mod.describe(p),
             "before": {"status": b["status"], "count": b["count"]},
             "after": None if a is None else {"status": a["status"], "count": a["count"],
                                              "violations": a["violations"]}}
+
+
+def where(r: dict) -> str:
+    loc = r.get("location")
+    if loc:
+        return f"{loc['file']}:{loc['line']}" if loc.get("line") else loc["file"]
+    return r.get("package") or ""
 
 
 def to_json(report: dict) -> str:
@@ -156,6 +168,17 @@ def to_markdown(r: dict) -> str:
         out += ["## Policy", "", f"- {md_cell(pol['source'])}: {md_cell(pol['describe'])}",
                 f"- Before: {pol['before']['status'].upper()} ({pol['before']['count']}) · "
                 f"after: {after_txt}", ""]
+    if r.get("risks") is not None:
+        items = r["risks"]["items"]
+        out += [f"## Supply-chain & hygiene ({len(items)})", "", f"_{RISK_NOTE}_", ""]
+        if items:
+            out += ["| Kind | Severity | Confidence | Signal | Where |", "|---|---|---|---|---|"]
+            out += [f"| {md_cell(x['kind'])} | {md_cell(x['severity'])} | "
+                    f"{md_cell(x['confidence'])} | {md_cell(x['title'])} | {md_cell(where(x))} |"
+                    for x in items]
+        else:
+            out.append("_No supply-chain signals._")
+        out.append("")
     t = r["tests"]
     out += ["## Tests (reported separately from the scan)", "",
             "- No verification ran." if t["exit_code"] is None and t["status"] is None else
@@ -165,12 +188,13 @@ def to_markdown(r: dict) -> str:
         items = r["classes"][c]
         out += [f"## {TITLES[c]} ({len(items)})", ""]
         if items:
-            out += ["| Advisory | Package | Severity | Scope | Summary |", "|---|---|---|---|---|"]
+            out += ["| Advisory | Package | Severity | Scope | Exploitation | Summary |",
+                    "|---|---|---|---|---|---|"]
             for i in items:
                 ver = i["version"] + moved(i)
                 out.append(f"| {md_cell(i['advisory'])} | {md_cell(i['package'])}@{md_cell(ver)}"
                            f" | {md_cell(i['severity'])} | {md_cell(i['scope'])} | "
-                           f"{md_cell(i['summary'])} |")
+                           f"{md_cell(xlabel(i))} | {md_cell(i['summary'])} |")
         else:
             out.append("_None._")
         out.append("")
@@ -233,17 +257,25 @@ def e(value) -> str:
     return html.escape("" if value is None else str(value), quote=True)
 
 
+def xlabel(i: dict) -> str:
+    x = i.get("exploit")
+    return x["label"] if x else "—"
+
+
 def table(items: list[dict]) -> str:
     if not items:
         return '<p class="muted">None.</p>'
     rows = []
     for i in items:
         ver = e(i["version"] + moved(i))
+        e7 = e((i.get("exploit") or {}).get("evidence"))
         rows.append(f"<tr><td><code>{e(i['advisory'])}</code></td><td><code>{e(i['package'])}"
                     f"@{ver}</code></td><td class=\"sev-{e(i['severity'])}\">{e(i['severity'])}"
-                    f"</td><td>{e(i['scope'])}</td><td>{e(i['summary'])}</td></tr>")
+                    f"</td><td>{e(i['scope'])}</td><td title=\"{e7}\">"
+                    f"{e(xlabel(i))}</td><td>{e(i['summary'])}</td></tr>")
     return ("<table><thead><tr><th>Advisory</th><th>Package</th><th>Severity</th><th>Scope</th>"
-            "<th>Summary</th></tr></thead><tbody>" + "".join(rows) + "</tbody></table>")
+            "<th>Exploitation</th><th>Summary</th></tr></thead><tbody>" + "".join(rows)
+            + "</tbody></table>")
 
 
 def diff_html(diff: str) -> str:
@@ -292,6 +324,16 @@ def to_html(r: dict) -> str:
         parts += ["<h2>Policy</h2>", f"<p>{e(pol['source'])}: {e(pol['describe'])}. Before: "
                   f"{e(pol['before']['status'].upper())} ({e(pol['before']['count'])}) · after: "
                   f"{e(after_txt)}</p>"]
+    if r.get("risks") is not None:
+        items = r["risks"]["items"]
+        rows = "".join(f"<tr><td>{e(x['kind'])}</td><td class=\"sev-{e(x['severity'])}\">"
+                       f"{e(x['severity'])}</td><td>{e(x['confidence'])}</td><td>{e(x['title'])}"
+                       f"</td><td><code>{e(where(x))}</code></td></tr>" for x in items)
+        parts += [f"<h2>Supply-chain &amp; hygiene ({len(items)})</h2>",
+                  f"<p class=\"muted\">{e(RISK_NOTE)}</p>",
+                  "<table><thead><tr><th>Kind</th><th>Severity</th><th>Confidence</th>"
+                  "<th>Signal</th><th>Where</th></tr></thead><tbody>" + rows + "</tbody></table>"
+                  if items else "<p class=\"muted\">No supply-chain signals.</p>"]
     parts += ["<h2>Tests</h2>", f"<p>{test_line}</p>",
               "<p class=\"muted\">Reported separately from the scan result.</p>"]
     for cls in CLASSES:

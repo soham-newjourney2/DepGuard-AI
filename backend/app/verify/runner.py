@@ -15,13 +15,13 @@ from app.lockfile import parse as parse_lock
 from app.prioritize import enrich
 from app.remediation import patch
 from app.remediation.candidates import split_label
-from app.scanner import Package, ScanError, make_scanner
-from app.scanner.fixture import RecordedScanner
+from app.report.compare import key
+from app.samples import packages as sample_packages
+from app.scanner import ScanError, make_scanner
 from app.scanner.normalize import normalize
 from app.security import redact
 from app.verify.modes import (
     SKIP,
-    DockerExecutor,
     LocalExecutor,
     MockExecutor,
     StageResult,
@@ -31,10 +31,10 @@ from app.verify.modes import (
 log = logging.getLogger("depguard.verify")
 LOG_CAP = 200 * 1024
 LINE_CAP = 4000
-TAIL_LINES = 80
 LOCK_DIFF_LINES = 600
 NO_TEST = "no test specified"
-DEMO_LOCAL_LABEL = "Verification ran without container isolation (bundled sample only)."
+DEMO_LOCAL_LABEL = ("Verification ran on this machine with install scripts disabled "
+                    "(bundled sample only).")
 TESTS_LABEL = "Tests exited 0. Passing tests are evidence, not a guarantee of no regressions."
 
 
@@ -99,6 +99,10 @@ def save_proposal(job_dir: Path, proposal: dict) -> None:
     write_atomic(path, json.dumps(proposal))
 
 
+NO_NODE = ("Node.js 18+ and npm are needed to verify the demo, and npm was not found on this "
+           "machine. Install Node.js (it includes npm) and retry.")
+
+
 async def pick_executor(v: Verification):
     mode = v.settings.verify_mode
     if mode == "off":
@@ -108,16 +112,14 @@ async def pick_executor(v: Verification):
     if v.settings.local_only:
         return None, mode, ("Local-only mode: verification needs the npm registry, so it is "
                             "disabled; only scanner calls may leave this machine.")
-    if mode in ("auto", "docker") and await DockerExecutor.available():
-        return DockerExecutor(), "docker", None
-    if mode == "docker":
-        return None, "docker", "Docker with the depguard-worker image is not available."
     is_sample = v.job["source"] == "demo" and await asyncio.to_thread(
         sample_matches, v.project, v.settings.samples_dir, v.job["filename"])
+    if is_sample and shutil.which("npm") is None:
+        return None, mode, NO_NODE
     if is_sample:
         return LocalExecutor(v.settings.data_dir / "cache" / "npm-local"), "demo-local", None
-    return None, mode, ("No isolated runner is available: Docker is missing and only the "
-                        "bundled samples may run without a container.")
+    return None, mode, ("Verification runs on the bundled demo projects only; apply the "
+                        "patch and run your own tests.")
 
 
 def prepare(v: Verification) -> Path:
@@ -156,10 +158,6 @@ def tree_delta(before: Graph, after: Graph) -> dict:
             "removed": sorted(f"{n}@{v}" for n in a.keys() - b.keys() for v in a[n])}
 
 
-def key(f: dict) -> tuple[str, str]:
-    return f["advisory"]["id"], f["package"]["name"]
-
-
 def label(f: dict) -> dict:
     return {"advisory": f["advisory"]["id"], "severity": f["advisory"]["severity"]["label"],
             "package": f"{f['package']['name']}@{f['package']['version']}"}
@@ -181,7 +179,7 @@ async def run_stage(v: Verification, executor, stage: str, work: Path, timeout: 
     started, t0 = iso(utcnow()), time.perf_counter()
     v.emit("stage", {"stage": stage, "state": "start"})
     try:
-        res: StageResult = await executor.run(stage, work, timeout, slog.add, v.pid[2:10])
+        res: StageResult = await executor.run(stage, work, timeout, slog.add)
     except Exception as exc:
         log.exception("stage %s crashed", stage)
         res = StageResult(None, infra_error=str(exc))
@@ -204,18 +202,14 @@ async def rescan(v: Verification, work: Path) -> dict:
     manifest = json.loads((work / "package.json").read_text("utf-8"))
     before_graph = Graph(parse_lock(old_lock))
     after_graph = Graph(parse_lock(new_lock, manifest))
-    pkgs = sorted({Package(after_graph.nodes[k[0]].name, after_graph.nodes[k[0]].version,
-                            after_graph.nodes[k[0]].ecosystem)
-                   for k in after_graph.packages().values()})
+    pkgs = sample_packages(after_graph)
     notes: list[str] = []
     try:
         scan = await asyncio.wait_for(
             make_scanner(v.settings).scan(pkgs, work / "package-lock.json"),
             v.settings.scan_timeout_s)
-    except (ScanError, TimeoutError):
-        if v.job["source"] != "demo":
-            raise
-        scan = await recorded_rescan(v, pkgs, after_graph, notes)
+    except TimeoutError:
+        raise ScanError("OSV rescan timed out") from None
     after = enrich(normalize(scan, after_graph))
     ids = set(v.proposal.get("finding_ids") or [v.proposal["finding_id"]])
     targets = [f for f in v.findings if f["id"] in ids]
@@ -234,25 +228,6 @@ async def rescan(v: Verification, work: Path) -> dict:
         "lock_diff": "\n".join(lock_diff[:LOCK_DIFF_LINES]),
         "lock_diff_truncated": len(lock_diff) > LOCK_DIFF_LINES,
     }
-
-
-async def recorded_rescan(v: Verification, pkgs: list[Package], graph: Graph,
-                         notes: list[str]):
-    """Bundled demos only: rescan from the recording, refusing if the target is not covered."""
-    recorded = RecordedScanner(v.settings.recorded_dir, source="cache")
-    scan = await recorded.scan(pkgs)
-    unknown = [p for p in pkgs if not recorded.known(p)]
-    ids = set(v.proposal.get("finding_ids") or [v.proposal["finding_id"]])
-    targets = {f["package"]["name"] for f in v.findings if f["id"] in ids}
-    missing = [p.label for p in unknown if p.name in targets]
-    if missing:
-        raise ScanError(f"{', '.join(missing)} is not in the recorded scan, so it could not be "
-                        "re-checked offline")
-    notes.append(f"Rescan used the recorded scan from {scan.started} — live scanner unavailable.")
-    if unknown:
-        notes.append(f"{len(unknown)} package versions in the new tree are not in the recording "
-                     "and are shown without advisories.")
-    return scan
 
 
 def finish(v: Verification, status: str, reason: str | None) -> None:

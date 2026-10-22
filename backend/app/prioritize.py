@@ -16,6 +16,18 @@ def depth_points(finding: dict) -> tuple[int, str]:
     return (5, f"depth {depth}") if depth <= 2 else (2, f"depth {depth}")
 
 
+def exploit_points(x: dict) -> tuple[int, str]:
+    """Points for exploitation; missing data scores zero but gets flagged."""
+    if x["status"] == "listed":
+        return 15, "CISA KEV listed"
+    if x["status"] == "scored":
+        pct = x["epss"]["percentile"]
+        label = f"EPSS {ev.ordinal(int(pct * 100))} pct"
+        return (8 if pct >= 0.95 else 4 if pct >= 0.80 else 0), label
+    return 0, {"none": "not in KEV, no EPSS", "unknown": "no CVE",
+               "unavailable": "feeds unavailable", "off": "not checked"}[x["status"]]
+
+
 def band(score: int) -> tuple[str, str]:
     return next((b, label) for floor, b, label in BANDS if score >= floor)
 
@@ -36,10 +48,20 @@ def prioritize(finding: dict) -> dict:
         ("exposure", "Exposure", f"{distinct} path{'s' if distinct != 1 else ''}",
          3 if distinct >= 3 else 0, "path"),
     ]
+    if finding.get("malicious"):
+        signals.insert(0, ("malicious", "Malicious package", "OSV MAL- record", 70, "advisory"))
+    exploit = finding.get("exploit")
+    if exploit:
+        xpts, xlabel = exploit_points(exploit)
+        signals.append(("exploitation", "Exploitation", xlabel, xpts, "exploit"))
     score = sum(s[3] for s in signals)
     code, label = band(score)
-    flags = [f for f, on in (("severity unknown", sev == "unknown"), ("no fix", not fixes),
-                             ("depth unknown", dlabel == "unknown")) if on]
+    flags = [f for f, on in (("malicious package", bool(finding.get("malicious"))),
+                             ("severity unknown", sev == "unknown"),
+                             ("no fix", not fixes and not finding.get("malicious")),
+                             ("depth unknown", dlabel == "unknown"),
+                             ("exploit unknown", bool(exploit) and exploit["status"]
+                              in ("unknown", "unavailable", "off"))) if on]
     return {
         "score": score, "band": code, "band_label": label, "flags": flags,
         "signals": [{"key": k, "label": lab, "value": v, "points": p,

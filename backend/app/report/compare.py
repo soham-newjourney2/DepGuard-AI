@@ -1,3 +1,5 @@
+from app.prioritize import exploit_points
+
 CLASSES = ("resolved", "still_present", "newly_detected", "unable_to_verify")
 
 
@@ -5,12 +7,20 @@ def key(f: dict) -> tuple[str, str]:
     return f["advisory"]["id"], f["package"]["name"]
 
 
+def exploit_item(f: dict) -> dict | None:
+    x = f.get("exploit")
+    if not x:
+        return None
+    e7 = next((e["text"] for e in f.get("evidence") or [] if e["kind"] == "exploit"), None)
+    return {"status": x["status"], "label": exploit_points(x)[1], "evidence": e7}
+
+
 def item(f: dict, after_versions: list[str] | None = None) -> dict:
     pkg = f["package"]
     out = {"advisory": f["advisory"]["id"], "summary": f["advisory"]["summary"],
            "severity": f["advisory"]["severity"]["label"], "package": pkg["name"],
            "version": pkg["version"], "scope": f["scope"],
-           "band": (f.get("priority") or {}).get("band")}
+           "band": (f.get("priority") or {}).get("band"), "exploit": exploit_item(f)}
     if after_versions is not None:
         out["versions_after"] = after_versions
     return out

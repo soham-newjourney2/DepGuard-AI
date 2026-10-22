@@ -7,8 +7,8 @@ ECOSYSTEM = "Maven"
 
 def load_gradle(root: Path) -> Builder:
     b = Builder(ECOSYSTEM, root.name)
-    for line in read_text(root / "gradle.lockfile").splitlines():
-        line = line.strip()
+    for raw in read_text(root / "gradle.lockfile").splitlines():
+        line = raw.strip()
         if not line or line.startswith("#") or line.startswith("empty="):
             continue
         coords, _, configs = line.partition("=")

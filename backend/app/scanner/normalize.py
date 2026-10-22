@@ -6,6 +6,7 @@ from cvss import CVSS3, CVSS4
 
 from app import versions
 from app.graph import RANK, Graph
+from app.risks import malware
 from app.scanner.base import ECOSYSTEM, Package, ScanResult
 
 DB_LABELS = {"CRITICAL": "critical", "HIGH": "high", "MODERATE": "medium", "MEDIUM": "medium",
@@ -25,11 +26,6 @@ def parse_ver(v: str | None) -> sv.Version | None:
             return sv.Version.coerce(v.lstrip("v"))
         except ValueError:
             return None
-
-
-def ver_key(v: str):
-    p = parse_ver(v)
-    return (0, p) if p else (1, v)
 
 
 def score_label(score: float) -> str:
@@ -65,6 +61,13 @@ def ids_of(record: dict) -> tuple[str, list[str]]:
     ids = [record["id"], *(record.get("aliases") or [])]
     primary = next((i for i in ids if i.startswith("GHSA-")), record["id"])
     return primary, sorted(set(ids) - {primary})
+
+
+def cwes_of(record: dict) -> list[str]:
+    ids = set((record.get("database_specific") or {}).get("cwe_ids") or [])
+    for aff in record.get("affected") or []:
+        ids |= set((aff.get("database_specific") or {}).get("cwe_ids") or [])
+    return sorted(i for i in ids if isinstance(i, str) and i.startswith("CWE-"))
 
 
 def ranges_for(record: dict, name: str, version: str,
@@ -178,7 +181,7 @@ def make_finding(record: dict, pkg: Package, info: dict, scan: dict) -> dict:
             "id": primary, "aliases": aliases, "summary": summary,
             "details": details[:MAX_DETAILS], "severity": severity(record),
             "published": record.get("published"), "modified": record.get("modified"),
-            "refs": refs_of(record), "source": "osv",
+            "refs": refs_of(record), "source": "osv", "cwes": cwes_of(record),
         },
         "package": {"name": pkg.name, "version": pkg.version, "ecosystem": pkg.ecosystem},
         "affected_ranges": ranges, "fixed_versions": fixed,
@@ -192,6 +195,7 @@ def merge(existing: dict, record: dict) -> None:
     primary, aliases = ids_of(record)
     adv = existing["advisory"]
     adv["aliases"] = sorted((set(adv["aliases"]) | set(aliases) | {primary}) - {adv["id"]})
+    adv["cwes"] = sorted(set(adv.get("cwes", [])) | set(cwes_of(record)))
 
 
 def normalize(scan: ScanResult, graph: Graph) -> list[dict]:
@@ -216,6 +220,7 @@ def normalize(scan: ScanResult, graph: Graph) -> list[dict]:
             else:
                 local.append((ids, make_finding(record, pkg, info, meta)))
         findings += [f for _, f in local]
+    malware.mark(findings)
     findings.sort(key=lambda f: (-SEV_ORDER[f["advisory"]["severity"]["label"]],
                                  -(f["advisory"]["severity"]["score"] or 0),
                                  f["package"]["name"], f["advisory"]["id"]))

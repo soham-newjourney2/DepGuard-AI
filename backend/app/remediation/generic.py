@@ -1,5 +1,4 @@
-"""Fix proposals for non-npm stacks: smallest fixed version from OSV ranges, the package
-manager command that applies it, and a real diff where the pin lives in a plain text file."""
+"""Fixes for non-npm stacks: smallest fixed version, the right command, a diff where possible."""
 
 import hashlib
 import json
@@ -8,6 +7,7 @@ from pathlib import Path
 
 from app import versions
 from app.remediation import patch
+from app.risks import malware
 from app.scanner.base import Package
 from app.scanner.normalize import contains_in
 from app.stacks import BY_ID, python
@@ -26,10 +26,14 @@ COMMANDS = {
     "nuget": ("dotnet add package {name} --version {to}",) * 2,
     "gradle": ("add a dependency constraint {name}:{to}, then ./gradlew dependencies "
                "--write-locks",) * 2,
-    "site": ("Update the page's {name} include from {frm} to {to}",) * 2,
+    "yarn": ("yarn up {name}@{to}  (Yarn 1: yarn upgrade {name}@{to})",
+             'add "resolutions": {{"{name}": "{to}"}} to package.json, then yarn install'),
+    "pnpm": ("pnpm update {name}@{to}",
+             'add "pnpm": {{"overrides": {{"{name}": "{to}"}}}} to package.json, then '
+             "pnpm install"),
 }
-NOT_VERIFIED = ("Isolated verification runs npm projects only; apply this change and run your "
-                "own tests before merging.")
+NOT_VERIFIED = ("Verification runs on the bundled npm demos only; apply this change and run "
+                "your own tests before merging.")
 
 
 def jump(ecosystem: str, old: str, new: str) -> str:
@@ -81,23 +85,7 @@ def swap_gomod(text: str, name: str, old: str, new: str) -> str:
                   lambda m: f"{m.group(1)}{name} v{new}", text, flags=re.M)
 
 
-def swap_html(text: str, name: str, old: str, new: str) -> str:
-    """Bump the version inside src/href URLs that name this library."""
-    base = re.escape(name.lower() if name.startswith("@") else name.split(".")[0].lower())
-    url = re.compile(r"""((?:src|href)\s*=\s*["'])([^"']*)(["'])""", re.I)
-
-    def bump(m):
-        value = m.group(2)
-        if not re.search(base, value.lower()):
-            return m.group(0)
-        value = re.sub(rf"(?<![\d.]){re.escape(old)}(?![\d])", new, value)
-        return m.group(1) + value + m.group(3)
-    return url.sub(bump, text)
-
-
 def pinned_files(stack: str, root: Path) -> list[Path]:
-    if stack == "site" and (root / "index.html").is_file():
-        return [root / "index.html"]
     if stack == "pip":
         return python.requirement_files(root)
     if stack == "go" and (root / "go.mod").is_file():
@@ -107,7 +95,7 @@ def pinned_files(stack: str, root: Path) -> list[Path]:
 
 def apply_changes(stack: str, root: Path, changes: list[dict]) -> str:
     """Unified diff of every plain-text pin the changes touch."""
-    swap = {"pip": swap_requirement, "site": swap_html}.get(stack, swap_gomod)
+    swap = {"pip": swap_requirement}.get(stack, swap_gomod)
     out = []
     for path in pinned_files(stack, root):
         before = path.read_text("utf-8")
@@ -130,6 +118,8 @@ def pid_of(*parts) -> str:
 
 
 async def plan(f: dict, findings: list[dict], root: Path, stack: str, checker) -> list[dict]:
+    if f.get("malicious"):
+        return [malware.remove_proposal(f)]
     eco = f["package"]["ecosystem"]
     name, cur = f["package"]["name"], f["package"]["version"]
     target, notes = target_for(f, findings)

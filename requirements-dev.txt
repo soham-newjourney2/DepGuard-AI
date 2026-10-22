@@ -5,3 +5,4 @@ respx>=0.21
 ruff>=0.5
 playwright>=1.45
 pytest-playwright>=0.5
+pip-audit>=2.7

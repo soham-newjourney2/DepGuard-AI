@@ -8,6 +8,7 @@ import semantic_version as sv
 
 from app.remediation import patch
 from app.remediation.registry import Registry, RegistryError
+from app.risks import malware
 from app.scanner.base import Package
 from app.scanner.normalize import contains, parse_ver
 
@@ -129,10 +130,13 @@ class Planner:
         self.notes: list[str] = []
 
     async def plan(self) -> list[dict]:
+        if self.f.get("malicious"):
+            return [malware.remove_proposal(self.f)]
         try:
             doc = await self.registry.packument(self.name)
         except RegistryError as exc:
-            return [self.none([f"Registry metadata unavailable: {exc}"])]
+            return [self.none([f"Could not get npm registry data ({exc}). Check your internet "
+                               "connection and retry."])]
         base = parse_ver(self.version)
         target = pick(stable(doc), base, self.adv.status, lambda v: self.deprecated(doc, v)) \
             if base else None
@@ -141,7 +145,7 @@ class Planner:
         out = []
         direct_paths = [p for p in self.f["paths"] if len(p) == 2]
         if direct_paths:
-            out.append(await self.direct(doc, target))
+            out.append(await self.direct(target))
         groups: dict[str, list[list[str]]] = {}
         for p in self.f["paths"]:
             if len(p) > 2:
@@ -173,7 +177,7 @@ class Planner:
     def none(self, warnings: list[str]) -> dict:
         return self.finish("none", [], [], warnings, "n/a", "No safe upgrade available")
 
-    async def direct(self, doc: dict, target: str) -> dict:
+    async def direct(self, target: str) -> dict:
         section = patch.section_of(self.manifest, self.name) or "dependencies"
         old_spec = (self.manifest.get(section) or {}).get(self.name, "")
         edits = [{"op": "set", "section": section, "name": self.name,

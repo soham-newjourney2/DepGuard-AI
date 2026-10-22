@@ -7,6 +7,7 @@ from app.errors import AppError
 from app.prioritize import sort_key
 from app.routes.jobs import limited
 from app.scanner.normalize import SEV_ORDER
+from app.verify.modes import verify_candidate
 
 router = APIRouter(prefix="/api/jobs", tags=["findings"])
 SORTS = {
@@ -58,6 +59,8 @@ def row(f: dict) -> dict:
         "path": f["paths"][0] if f["paths"] else [],
         "fix_available": f["fix_available"], "fixed_versions": f["fixed_versions"],
         "priority": {k: f["priority"][k] for k in ("score", "band", "band_label", "flags")},
+        "exploit": f.get("exploit"),
+        "malicious": bool(f.get("malicious")),
     }
 
 
@@ -103,7 +106,7 @@ async def explain_finding(job_id: str, finding_id: str, request: Request) -> dic
     finding = get_finding(job_id, finding_id, request)
     state = request.app.state
     cache = state.store.job_dir(job_id) / "explanations"
-    return await ai.explain(finding, state.ai_provider, cache)
+    return await ai.explain(finding, cache)
 
 
 @router.post("/{job_id}/findings/{finding_id}/proposal", dependencies=[Depends(limited)])
@@ -114,7 +117,7 @@ async def propose_fix(job_id: str, finding_id: str, request: Request) -> dict:
         raise AppError("E_NOT_FOUND", "Finding not found.", "", 404)
     state = request.app.state
     items = await remediation.propose(state.store.job_dir(job_id), finding, findings,
-                                      state.settings, demo=job["source"] == "demo")
+                                      state.settings, verifiable=verify_candidate(job))
     return {"finding_id": finding_id, "items": [public_proposal(p) for p in items]}
 
 
@@ -143,5 +146,5 @@ async def batch_plan(job_id: str, request: Request) -> dict:
     job, findings = load_findings(request, job_id)
     state = request.app.state
     plan = await remediation.propose_batch(state.store.job_dir(job_id), findings, state.settings,
-                                           demo=job["source"] == "demo")
+                                           verifiable=verify_candidate(job))
     return public_proposal(plan)

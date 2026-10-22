@@ -1,4 +1,4 @@
-from app import versions
+from app import cwe, versions
 
 REACHABILITY_UNKNOWN = ("Reachability not determined — static import analysis can miss "
                         "dynamic usage.")
@@ -51,6 +51,54 @@ def reach_text(finding: dict) -> tuple[str, str, str]:
                   else "not analysed"), label
 
 
+def ordinal(n: int) -> str:
+    suffix = "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
+
+def epss_text(e: dict) -> str:
+    return (f"EPSS {e['epss']:.3f} ({ordinal(int(e['percentile'] * 100))} percentile) on "
+            f"{e['date']} for {e['cve']}. EPSS is a model's estimate of exploitation in the next "
+            "30 days, not an observation.")
+
+
+def exploit_text(x: dict) -> tuple[str, str, str]:
+    absent = (f"Not in CISA KEV as of {x['as_of']}. Absence from the list is not proof it is "
+              "not exploited.")
+    if x["status"] == "listed":
+        k = x["kev"]
+        text = (f"{k['cve']} is in CISA KEV since {k['dateAdded']} (known ransomware use: "
+                f"{k.get('knownRansomwareCampaignUse') or 'Unknown'}).")
+        if x["epss"]:
+            return f"{text} {epss_text(x['epss'])}", "cisa.gov KEV · first.org EPSS", "Confirmed"
+        return text, "cisa.gov KEV", "Confirmed"
+    if x["status"] == "scored":
+        kev = absent if x["checked"]["kev"] else "CISA KEV could not be checked."
+        return f"{epss_text(x['epss'])} {kev}", "first.org EPSS", "Possible"
+    if x["status"] == "none":
+        return (f"{absent} No EPSS score is published for {', '.join(x['cves'])}.",
+                "cisa.gov KEV · first.org EPSS", "Not observed")
+    if x["status"] == "unknown":
+        return "No CVE id, so exploit data is unknown.", "advisory aliases", "Unknown"
+    if x["status"] == "unavailable":
+        return ("CISA KEV and FIRST EPSS could not be reached; exploitation status is unknown.",
+                "not available", "Unknown")
+    return ("Exploit signals are off (local-only mode or EXPLOIT_SIGNALS=off); exploitation "
+            "status is unknown.", "not checked", "Unknown")
+
+
+def weakness_text(cwes: list[str]) -> tuple[str, str, str]:
+    w = cwe.weakness(cwes)
+    if w is None:
+        return cwe.NONE, "advisory", "Unknown"
+    others = [c for c in cwes if c != w["id"]]
+    also = f" Also listed: {', '.join(others[:3])}." if others else ""
+    if not w["known"]:
+        return (f"The advisory classifies it as {w['id']}.{also}", w["source"], "Confirmed")
+    return (f"The advisory classifies it as {w['id']} ({w['name']}): {w['plain']}{also}",
+            w["source"], "Confirmed")
+
+
 def chain(path: list[str]) -> str:
     return " → ".join(path)
 
@@ -92,6 +140,9 @@ def build(finding: dict) -> list[dict]:
         ("scan", f"Scanned with {scan['scanner']} ({scan['version']}) at {scan['ts']}{cached}.",
          scan["scanner"], "Confirmed"),
     ]
+    if finding.get("exploit"):
+        items.append(("exploit", *exploit_text(finding["exploit"])))
+    items.append(("weakness", *weakness_text(adv.get("cwes") or [])))
     return [{"eid": f"E{i}", "kind": kind, "text": text, "source": source, "label": lab}
             for i, (kind, text, source, lab) in enumerate(items, 1)]
 

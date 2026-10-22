@@ -46,6 +46,24 @@ def read_json(path: Path) -> dict:
     return data
 
 
+MAX_YAML = 20 * 1024 * 1024
+
+
+def read_yaml(path: Path, text: str | None = None) -> dict:
+    """Safe YAML only (no tags, no code); lockfiles are data."""
+    import yaml
+    text = read_text(path) if text is None else text
+    if len(text) > MAX_YAML:
+        raise bad_lock(path, "file is too large")
+    try:
+        data = yaml.load(text, Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader))
+    except yaml.YAMLError as exc:
+        raise ValueError(f"invalid YAML ({exc.__class__.__name__})") from None
+    if not isinstance(data, dict):
+        raise ValueError("expected a YAML mapping")
+    return data
+
+
 def opt_toml(path: Path) -> dict:
     return read_toml(path) if path.is_file() else {}
 

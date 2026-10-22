@@ -14,11 +14,11 @@ from app import github, pipeline
 from app.errors import AppError
 from app.intake import MB, SKIP_DIRS
 from app.jobs import iso, release_job, utcnow
+from app.samples import STORED, real_name
 from app.stacks import found_in
-from app.web.fetch import parse_target
 
 router = APIRouter(prefix="/api/jobs", tags=["jobs"])
-SAMPLES = {"vuln-demo", "clean-demo", "messy-demo", "python-demo"}
+SAMPLES = {"vuln-demo", "clean-demo", "messy-demo", "python-demo", "supplychain-demo"}
 PUBLIC = ("id", "status", "step", "source", "filename", "created_at", "updated_at", "expires_at",
           "summary", "warnings", "error")
 HEARTBEAT_S = 15
@@ -57,7 +57,7 @@ def zip_dir(src: Path, dest: Path) -> None:
         for path in sorted(src.rglob("*")):
             rel = path.relative_to(src)
             if path.is_file() and not path.is_symlink() and not SKIP_DIRS & set(rel.parts):
-                zf.write(path, rel.as_posix())
+                zf.write(path, real_name(rel).as_posix())
 
 
 def project_choice(value) -> str | None:
@@ -109,7 +109,7 @@ async def demo(sample: str, request: Request) -> dict:
     if sample not in SAMPLES:
         raise AppError("E_NOT_FOUND", "Unknown sample.", "Use one of: "
                        + ", ".join(sorted(SAMPLES)) + ".", 404)
-    if not src.is_dir() or not found_in(src):
+    if not src.is_dir() or not (found_in(src) or any(src.glob("*" + STORED))):
         raise AppError("E_NOT_FOUND", "This sample is not bundled in this build.",
                        "Upload your own project zip instead.", 404)
     job = store.create("demo", f"{sample}.zip")
@@ -149,27 +149,6 @@ async def import_github(body: GithubImport, request: Request) -> dict:
     project = project_choice(body.project) or path
     store.update(job["id"], filename=f"{owner}/{repo}@{ref}" + (f" ({path}/)" if path else ""))
     launch(request, job["id"], archive, project)
-    return {"job_id": job["id"]}
-
-
-class SiteScanRequest(BaseModel):
-    url: str
-
-
-@router.post("/url", status_code=202, dependencies=[Depends(limited)])
-async def scan_url(body: SiteScanRequest, request: Request) -> dict:
-    s, store = request.app.state.settings, request.app.state.store
-    if s.local_only:
-        raise AppError("E_LOCAL_ONLY", "Live website scans are disabled in local-only mode.",
-                       "Upload a project zip instead.", 403)
-    target = parse_target(body.url, s.web_allow_private)
-    job = store.create("url", target.url[:200])
-    state = request.app.state
-    ctx = pipeline.Context(job["id"], store.job_dir(job["id"]) / "upload.zip", s, store,
-                           url=target.url)
-    task = asyncio.create_task(pipeline.run(ctx))
-    state.tasks[job["id"]] = task
-    task.add_done_callback(lambda _: state.tasks.pop(job["id"], None))
     return {"job_id": job["id"]}
 
 

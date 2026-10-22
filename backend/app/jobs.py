@@ -16,8 +16,6 @@ from app import db
 from app.errors import AppError
 
 JOB_FLOW = ["queued", "extracting", "parsing", "scanning", "analyzing", "ready"]
-JOB_TERMINAL = {"ready", "failed", "expired"}
-PROPOSAL_FLOW = ["proposed", "approved", "resolving", "testing", "rescanning"]
 PROPOSAL_END = {"verified", "verify_failed", "unable_to_verify"}
 
 JOB_TRANSITIONS: dict[str, set[str]] = {

@@ -66,8 +66,22 @@ def vulnerability(f: dict) -> dict:
                                                 "status": "affected"}]}],
         "properties": [{"name": "depguard:priority", "value": str(f["priority"]["score"])},
                        {"name": "depguard:band", "value": f["priority"]["band"]},
-                       {"name": "depguard:reachability", "value": f["reachability"]["label"]}],
+                       {"name": "depguard:reachability", "value": f["reachability"]["label"]},
+                       *exploit_properties(f.get("exploit"))],
     }
+
+
+def exploit_properties(x: dict | None) -> list[dict]:
+    if not x:
+        return []
+    kev = ("true" if x["status"] == "listed" else "false" if x["checked"]["kev"] and x["cves"]
+           else "unknown")
+    out = [{"name": "depguard:exploit_status", "value": x["status"]},
+           {"name": "depguard:kev", "value": kev}]
+    if x["epss"]:
+        out += [{"name": "depguard:epss", "value": str(x["epss"]["epss"])},
+                {"name": "depguard:epss_percentile", "value": str(x["epss"]["percentile"])}]
+    return out
 
 
 def build(job: dict, graph: dict, findings: list[dict]) -> dict:

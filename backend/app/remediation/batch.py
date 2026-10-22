@@ -31,7 +31,9 @@ async def plan_all(findings: list[dict], graph: dict, manifest_text: str, regist
     for f in findings:
         props = await Planner(f, findings, graph, manifest_text, registry, checker).plan()
         best = props[0]
-        if best["strategy"] == "none":
+        if best["strategy"] == "remove":
+            items.append(item(f, "remove", best, best["warnings"][0]))
+        elif best["strategy"] == "none":
             items.append(item(f, "no_fix", best, best["warnings"][0] if best["warnings"] else ""))
         else:
             chosen.append((f, best))

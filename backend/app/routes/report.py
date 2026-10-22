@@ -3,12 +3,15 @@ from pathlib import Path
 
 from fastapi import APIRouter, Request, Response
 
+from app import ai as ai_mod
 from app import remediation
 from app.errors import AppError
-from app.report import export
+from app.report import answer_key, export
 from app.report import sbom as sbom_mod
 from app.routes.findings import load_findings
+from app.routes.jobs import SAMPLES
 from app.routes.verify import read_result
+from app.stacks import BY_ID
 
 router = APIRouter(prefix="/api/jobs", tags=["report"])
 HTML_CSP = ("default-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; "
@@ -43,12 +46,16 @@ def assemble(request: Request, job_id: str, pid: str | None) -> dict:
                                    .read_text("utf-8"))
             except (OSError, ValueError):
                 after = None
-    ai = {"provider": state.ai_provider.name, "model": state.ai_provider.model}
+    ai = {"provider": ai_mod.ENGINE, "model": None}
     try:
         policy = json.loads((job_dir / "policy.json").read_text("utf-8"))
     except (OSError, ValueError):
         policy = None
-    return export.build(job, findings, proposal, verification, after, ai, policy)
+    try:
+        risks = json.loads((job_dir / "risks.json").read_text("utf-8"))
+    except (OSError, ValueError):
+        risks = None
+    return export.build(job, findings, proposal, verification, after, ai, policy, risks)
 
 
 @router.get("/{job_id}/report")
@@ -86,3 +93,33 @@ def sbom(job_id: str, request: Request, download: bool = False):
     return Response(json.dumps(doc, indent=2), media_type="application/vnd.cyclonedx+json",
                     headers={"Content-Disposition":
                              f'attachment; filename="depguard-sbom-{job_id[:8]}.cdx.json"'})
+
+
+@router.get("/{job_id}/answer-key")
+def get_answer_key(job_id: str, request: Request) -> dict:
+    """Bundled demos only: the live scan beside the demo's independent answer key."""
+    state = request.app.state
+    job = state.store.get(job_id)
+    demo = job["filename"].removesuffix(".zip")
+    if job["source"] != "demo" or demo not in SAMPLES:
+        raise AppError("E_NOT_FOUND", "Answer keys exist for the bundled demos only.", "", 404)
+    key = answer_key.load(state.settings.samples_dir, demo)
+    if key is None:
+        return {"available": False, "reason": "No answer key is bundled for this demo."}
+    out = {"available": False, "key": {k: key[k] for k in ("generated_at", "tools")}}
+    if job["status"] != "ready" or (job["summary"].get("scan") or {}).get("source") != "live":
+        return {**out, "reason": "The live scan did not finish, so there is nothing to compare."}
+    job_dir = state.store.job_dir(job_id)
+    lockfile = (remediation.project_root(job_dir)
+                / BY_ID[remediation.project_stack(job_dir)].lockfile)
+    if not answer_key.lock_matches(key, lockfile):
+        return {**out, "reason": "The answer key is out of date for this lockfile."}
+    _, findings = load_findings(request, job_id)
+    out = {**out, "available": True, **answer_key.compare(key, findings)}
+    if key.get("expected_risks") is not None:
+        try:
+            risks = json.loads((job_dir / "risks.json").read_text("utf-8"))
+        except (OSError, ValueError):
+            risks = []
+        out["risks"] = answer_key.compare_risks(key["expected_risks"], risks)
+    return out

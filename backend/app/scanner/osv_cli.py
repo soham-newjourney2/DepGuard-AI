@@ -38,7 +38,7 @@ class OsvCliScanner:
         return shutil.which("osv-scanner") is not None
 
     async def version(self) -> str:
-        code, out, err = await self.runner([self.binary, "--version"], self.timeout)
+        _, out, err = await self.runner([self.binary, "--version"], self.timeout)
         m = re.search(r"(\d+\.\d+\.\d+)", out + err)
         return m.group(1) if m else "unknown"
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from app.jobs import iso, utcnow
 from app.scanner.base import Package, ScanError, ScanResult, build_result
 
-SAFE_ID = str.maketrans({c: "_" for c in '/\\:*?"<>|'})
+SAFE_ID = str.maketrans(dict.fromkeys('/\\:*?"<>|', "_"))
 
 
 class RecordedScanner:

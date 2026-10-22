@@ -12,10 +12,12 @@ from starlette.routing import Match, Mount
 from app import __version__, ai, errors
 from app.config import Settings, get_settings
 from app.jobs import EventHub, JobStore, release_job
+from app.risks import typosquat
 from app.routes import findings as findings_routes
 from app.routes import graph as graph_routes
 from app.routes import jobs as jobs_routes
 from app.routes import report as report_routes
+from app.routes import risks as risks_routes
 from app.routes import verify as verify_routes
 from app.security import BodyLimit, CacheHeaders, RateLimiter, SecurityHeaders
 
@@ -60,12 +62,13 @@ async def lifespan(app: FastAPI):
     state.store.recover()
     state.store.purge_expired()
     cleaner = asyncio.create_task(cleanup_loop(app))
+    warm = asyncio.create_task(asyncio.to_thread(typosquat.warm))
     try:
         yield
     finally:
-        for task in [cleaner, *state.tasks.values()]:
+        for task in [cleaner, warm, *state.tasks.values()]:
             task.cancel()
-        for task in [cleaner, *state.tasks.values()]:
+        for task in [cleaner, warm, *state.tasks.values()]:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
         state.store.close()
@@ -77,7 +80,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                   openapi_url="/api/openapi.json", lifespan=lifespan)
     app.state.settings = settings
     app.state.limiter = RateLimiter(settings.rate_limit)
-    app.state.ai_provider = ai.make_provider(settings)
     errors.install(app)
 
     api = APIRouter(prefix="/api")
@@ -85,7 +87,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @api.get("/health")
     def health() -> dict:
         return {"status": "ok", "version": __version__, "scanner": settings.scanner,
-                "ai": settings.ai_effective, "verify_mode": settings.verify_mode,
+                "ai": ai.ENGINE, "verify_mode": settings.verify_mode,
                 "max_upload_mb": settings.max_upload_mb, "local_only": settings.local_only}
 
     app.include_router(api)
@@ -94,6 +96,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(graph_routes.router)
     app.include_router(verify_routes.router)
     app.include_router(report_routes.router)
+    app.include_router(risks_routes.router)
     if settings.frontend_dir.is_dir():
         app.router.routes.append(FrontendMount(
             "/", StaticFiles(directory=settings.frontend_dir, html=True), name="static"))
